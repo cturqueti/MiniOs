@@ -17,4 +17,10 @@ struct WiFiItems {
     void reset();
 };
 
+enum class WiFiLog
+{
+    DISABLE = 0,
+    ENABLE
+};
+
 #endif // WIFI_ITEMS_H

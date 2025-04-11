@@ -1,14 +1,13 @@
 #include "WiFiLib.h"
 
-const char *WiFiLib::TAG = "WiFiLib";
-
-WiFiLib::WiFiLib() : _log(WiFiLog::DISABLE)
+WiFiLib::WiFiLib() : _captivePortal(jsonStorage)
 {
-    nvs.begin();
+    _log = WiFiLog::DISABLE;
+    nvs.initialize();
 }
 WiFiLib::~WiFiLib()
 {
-    nvs.end();
+    nvs.terminate();
 }
 
 void WiFiLib::begin(WiFiItems wifi)
@@ -23,7 +22,7 @@ void WiFiLib::begin(WiFiItems wifi)
         }
         else
         {
-            startAP();
+            _captivePortal.begin();
         }
     }
 }
@@ -50,224 +49,8 @@ void WiFiLib::begin(WiFiItems wifi, WiFiLog log)
         {
             LOG_WARN("[WIFI] Iniciando AP");
         }
-        startAP();
+        _captivePortal.begin();
     }
-}
-
-void WiFiLib::startAP()
-{
-
-    // Desconecta do WiFi STA se estiver conectado
-    WiFi.disconnect(true);
-
-    // Configura o modo AP
-    WiFi.mode(WIFI_AP);
-
-    // Configuração do AP
-    const char *ap_ssid = "ESP32-AP";        // Nome do AP
-    const char *ap_password = "password123"; // Senha do AP (mínimo 8 caracteres)
-
-    // Inicia o Access Point
-    bool result = WiFi.softAP(ap_ssid, ap_password);
-
-    if (result)
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_INFO("[WIFI] AP Started");
-            LOG_INFO("[WIFI] AP SSID: %s", ap_ssid);
-            LOG_INFO("[WIFI] AP IP: %s", WiFi.softAPIP().toString().c_str());
-        }
-
-        // iniciar o captive portal
-    }
-    else
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_ERROR("[WIFI] Failed to start AP");
-        }
-    }
-}
-
-WiFiItems WiFiLib::loadConfig(std::string fileAddress)
-{
-    WiFiItems wifi;
-    if (_log == WiFiLog::ENABLE)
-    {
-        LOG_DEBUG("Carregando configuração...");
-    }
-
-    if (!LittleFS.exists(fileAddress.c_str()))
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_ERROR("[WIFI] Arquivo de configuração não encontrado: %s", fileAddress.c_str());
-        }
-        wifi.configLoaded = false;
-        return wifi; // Retorna objeto vazio
-    }
-
-    File file = LittleFS.open(fileAddress.c_str(), "r");
-    if (!file)
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            if (_log == WiFiLog::ENABLE)
-            {
-                LOG_ERROR("[WIFI] Erro ao abrir %s", fileAddress.c_str());
-            }
-        }
-
-        return WiFiItems(); // Defina um código de erro apropriado
-    }
-
-    size_t size = file.size();
-    if (size == 0)
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_ERROR("[WIFI] Arquivo vazio: %s", fileAddress.c_str());
-        }
-        _wifi.reset();
-        return WiFiItems(); // Retorna nullptr se o arquivo estiver vazio
-    }
-
-    // Aloca o buffer com o tamanho do arquivo
-    std::unique_ptr<char[]> buf(new char[size + 1]); // +1 para garantir espaço para o terminador '\0'
-    file.readBytes(buf.get(), size);
-    buf[size] = '\0'; // Adiciona o terminador de string
-
-    file.close();
-    JsonDocument doc; // Ajuste o tamanho conforme necessário
-    DeserializationError error = deserializeJson(doc, buf.get());
-
-    if (error)
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_ERROR("[WIFI] Falha ao analisar JSON: %s", error.c_str());
-        }
-        _wifi.reset();
-        return WiFiItems(); // Defina um código de erro apropriado
-    }
-
-    if (doc["ssid"].is<const char *>())
-    {
-        _wifi.ssid = doc["ssid"].as<String>().c_str();
-        if (_wifi.ssid == "")
-        {
-            _wifi.reset();
-            return WiFiItems();
-        }
-    }
-    else
-    {
-        _wifi.reset();
-        return WiFiItems();
-    }
-    if (doc["password"].is<const char *>())
-    {
-        _wifi.password = doc["password"].as<String>().c_str();
-    }
-    else
-    {
-        _wifi.reset();
-        return WiFiItems();
-    }
-
-    _wifi.dhcpFlag = doc["dhcp"] | false;
-
-    if (!_wifi.dhcpFlag)
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_INFO("[WIFI] Rading fixed IP configurations");
-        }
-        if (doc["ip"].is<JsonArray>() && doc["ip"].size() == 4)
-
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                _wifi.ip[i] = doc["ip"][i];
-            }
-            if (_wifi.ip[0] < 0 || _wifi.ip[0] > 255)
-            {
-                if (_log == WiFiLog::ENABLE)
-                {
-                    LOG_ERROR("[WIFI] IP address invalid");
-                }
-                _wifi.reset();
-                return WiFiItems();
-            }
-        }
-        else
-        {
-            if (_log == WiFiLog::ENABLE)
-            {
-                LOG_ERROR("[WIFI] Chave 'ip' ausente ou inválida.");
-            }
-            _wifi.reset();
-            return WiFiItems(); // Defina um código de erro apropriado
-        }
-
-        if (doc["gateway"].is<JsonArray>() && doc["gateway"].size() == 4)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                _wifi.gateway[i] = doc["gateway"][i];
-            }
-        }
-        else
-        {
-            if (_log == WiFiLog::ENABLE)
-            {
-                LOG_ERROR("[WIFI] Chave 'gateway' ausente ou inválida.");
-            }
-            _wifi.reset();
-            return WiFiItems(); // Defina um código de erro apropriado
-        }
-
-        if (doc["subnet"].is<JsonArray>() && doc["subnet"].size() == 4)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                _wifi.subnet[i] = doc["subnet"][i];
-            }
-            if (_wifi.subnet[0] < 0 || _wifi.subnet[0] > 255)
-            {
-                if (_log == WiFiLog::ENABLE)
-                {
-                    LOG_ERROR("[WIFI] Subnet Mask Invalid");
-                }
-                _wifi.reset();
-                return WiFiItems();
-            }
-        }
-        else
-        {
-            if (_log == WiFiLog::ENABLE)
-            {
-                LOG_ERROR("[WIFI] Chave 'subnet' ausente ou inválida.");
-            }
-            _wifi.reset();
-            return WiFiItems(); // Defina um código de erro apropriado
-        }
-    }
-    else
-    {
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_INFO("[WIFI] Selected DHCP");
-        }
-    }
-    _wifi.configLoaded = true;
-    if (_log == WiFiLog::ENABLE)
-    {
-        LOG_INFO("[WIFI] Configurações carregadas com sucesso.");
-    }
-
-    return _wifi;
 }
 
 bool WiFiLib::isCredentials()
@@ -323,7 +106,10 @@ void WiFiLib::connectToWiFi(WiFiItems wifi)
     }
     else
     {
-        ESP_LOGW(TAG, "Failed to connect to Wi-Fi.");
+        if (_log == WiFiLog::ENABLE)
+        {
+            LOG_WARN("[WIFI] Failed to connect to Wi-Fi.");
+        }
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF); // Reinicia completamente a interface Wi-Fi
     }

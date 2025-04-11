@@ -1,25 +1,22 @@
 #ifndef WIFILIB_H
 #define WIFILIB_H
 #include "WiFiCredentialsNVS.h"
-#include "WiFiItems.h"
+// #include "WiFiItems.h"
 #include <Arduino.h>
-#include <ArduinoJson.h>
-#include <LittleFS.h>
+// #include <ArduinoJson.h>
+// #include <LittleFS.h>
+#include "WiFiCaptivePortal.h"
+#include "WiFiCredentialsJSON.h"
 #include <LogLibrary.h>
 #include <vector>
 
 // #include "Utils.h"
-#include "WiFi.h"
+#include <WiFi.h>
 // #include "WiFiAP.h"
 
 class WiFiLib
 {
 public:
-    enum class WiFiLog
-    {
-        DISABLE = 0,
-        ENABLE
-    };
     static WiFiLib &getInstance()
     {
         static WiFiLib instance;
@@ -29,8 +26,6 @@ public:
 
     void begin(WiFiItems wifi);
     void begin(WiFiItems wifi, WiFiLog log);
-
-    WiFiItems loadConfig(std::string fileAddress);
 
     bool isCredentials();
 
@@ -52,6 +47,8 @@ private:
     WiFiLog _log;
     WiFiCredentialsNVS nvs;
     WiFiItems wifiConfig;
+    WiFiCredentialsJSON jsonStorage;
+    WiFiCaptivePortal _captivePortal;
 };
 
 #endif // WiFiLib_H
