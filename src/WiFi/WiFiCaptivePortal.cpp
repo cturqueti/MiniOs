@@ -77,10 +77,10 @@ void WiFiCaptivePortal::_setupDNS()
 void WiFiCaptivePortal::_setupServer()
 {
     _server.on("/", HTTP_GET, [this]()
-        { _sendFile("/index.html"); });
+               { _sendFile("/index.html"); });
 
     _server.on("/scan", HTTP_GET, [this]()
-        {
+               {
             int n = WiFi.scanNetworks();
             String json = "[";
             for (int i = 0; i < n; ++i) {
@@ -94,12 +94,12 @@ void WiFiCaptivePortal::_setupServer()
             _server.send(200, "application/json", json); });
 
     _server.on("/styles.css", HTTP_GET, [this]()
-        { _sendFile("/styles.css"); });
+               { _sendFile("/styles.css"); });
     _server.on("/script.js", HTTP_GET, [this]()
-        { _sendFile("/script.js"); });
+               { _sendFile("/script.js"); });
 
     _server.on("/connect", HTTP_POST, [this]()
-        {
+               {
             WiFiItems config;
             config.ssid = _server.arg("ssid").c_str();
             config.password = _server.arg("password").c_str();
@@ -117,7 +117,7 @@ void WiFiCaptivePortal::_setupServer()
             end(); });
 
     _server.onNotFound([this]()
-        { _sendFile("/index.html"); });
+                       { _sendFile("/index.html"); });
 
     _server.begin();
 }
@@ -128,9 +128,9 @@ void WiFiCaptivePortal::_handleClient()
     _dnsServer.processNextRequest();
 }
 
-void WiFiCaptivePortal::_serverTask(void* pvParameters)
+void WiFiCaptivePortal::_serverTask(void *pvParameters)
 {
-    WiFiCaptivePortal* portal = (WiFiCaptivePortal*)pvParameters;
+    WiFiCaptivePortal *portal = (WiFiCaptivePortal *)pvParameters;
     while (true)
     {
         portal->_handleClient();
@@ -139,7 +139,7 @@ void WiFiCaptivePortal::_serverTask(void* pvParameters)
     vTaskDelete(NULL);
 }
 
-bool WiFiCaptivePortal::_loadFromLittleFS(const String& path)
+bool WiFiCaptivePortal::_loadFromLittleFS(const String &path)
 {
     String contentType = _getContentType(path);
     File file = LittleFS.open(path, "r");
@@ -151,7 +151,7 @@ bool WiFiCaptivePortal::_loadFromLittleFS(const String& path)
     return true;
 }
 
-void WiFiCaptivePortal::_sendFile(const String& path)
+void WiFiCaptivePortal::_sendFile(const String &path)
 {
     if (!_loadFromLittleFS(path))
     {
@@ -173,7 +173,7 @@ void WiFiCaptivePortal::_sendFile(const String& path)
     }
 }
 
-String WiFiCaptivePortal::_getContentType(const String& filename)
+String WiFiCaptivePortal::_getContentType(const String &filename)
 {
     if (filename.endsWith(".html"))
         return "text/html";
@@ -206,7 +206,8 @@ bool WiFiCaptivePortal::_beginCredentials()
     {
         return true;
     }
-    if (_log == WiFiLog::ENABLE) {
+    if (_log == WiFiLog::ENABLE)
+    {
         LOG_ERROR("[WiFi] Error on load NVS");
     }
     ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);

@@ -1,12 +1,12 @@
 #ifndef WIFILIB_H
 #define WIFILIB_H
-// #include "WiFiCredentialsNVS.h"
+
 #include "WiFiItems.h"
 #include <Arduino.h>
 #include "ErrorLib.h"
 // #include <ArduinoJson.h>
 // #include <LittleFS.h>
-// #include "WiFiCaptivePortal.h"
+#include "WiFiCaptivePortal.h"
 #include <LogLibrary.h>
 #include <Preferences.h>
 #include <vector>
@@ -51,7 +51,7 @@ private:
     WiFiLog _log;
     // WiFiCredentialsNVS nvs;
     WiFiItems _wifiConfig;
-    // WiFiCaptivePortal _captivePortal;
+    WiFiCaptivePortal _captivePortal;
     mutable Preferences _preferences;
 };
 

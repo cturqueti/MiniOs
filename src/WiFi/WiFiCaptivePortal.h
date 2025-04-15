@@ -9,6 +9,7 @@
 #include <LogLibrary.h>
 #include <Preferences.h>
 #include "ErrorLib.h"
+#include <LittleFS.h>
 
 #define CAPTIVE_PORTAL_SSID "ESP32-Captive-Portal"
 #define CAPTIVE_PORTAL_DNS_PORT 53

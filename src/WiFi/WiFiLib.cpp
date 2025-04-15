@@ -21,7 +21,7 @@ void WiFiLib::begin()
         }
         else
         {
-            // _captivePortal.begin();
+            _captivePortal.begin();
         }
     }
 }
@@ -55,7 +55,7 @@ void WiFiLib::connectToWiFi(WiFiItems wifi)
     }
 
     WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info)
-        { this->WiFiEvent(event); });
+                 { this->WiFiEvent(event); });
 
     WiFi.begin(wifi.ssid.c_str(), wifi.password.c_str());
 
@@ -148,7 +148,8 @@ void WiFiLib::startAP()
 
 bool WiFiLib::_beginCredentials()
 {
-    if (_preferences.begin(nvs_namespace.data(), true)) {
+    if (_preferences.begin(nvs_namespace.data(), true))
+    {
         return true;
     }
     if (_log == WiFiLog::ENABLE)
