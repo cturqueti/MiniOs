@@ -3,6 +3,7 @@
 // #include "WiFiCredentialsNVS.h"
 #include "WiFiItems.h"
 #include <Arduino.h>
+#include "ErrorLib.h"
 // #include <ArduinoJson.h>
 // #include <LittleFS.h>
 // #include "WiFiCaptivePortal.h"
@@ -19,15 +20,14 @@ class WiFiLib
 public:
     static constexpr std::string_view nvs_namespace = "wifi_config";
 
-    static WiFiLib &getInstance(WiFiLog log = WiFiLog::ENABLE)
+    static WiFiLib& getInstance(WiFiLog log = WiFiLog::ENABLE)
     {
         static WiFiLib instance(log);
         return instance;
     }
     ~WiFiLib();
 
-    void begin(WiFiItems wifi);
-    void begin(WiFiItems wifi, WiFiLog log);
+    void begin();
 
     bool isCredentials();
 
@@ -37,8 +37,8 @@ public:
 
 private:
     WiFiLib(WiFiLog log);                         // Construtor privado
-    WiFiLib(const WiFiLib &) = delete;            // Previne cópia
-    WiFiLib &operator=(const WiFiLib &) = delete; // Previne atribuição
+    WiFiLib(const WiFiLib&) = delete;            // Previne cópia
+    WiFiLib& operator=(const WiFiLib&) = delete; // Previne atribuição
 
     void connectToWiFi(WiFiItems wifi);
     void WiFiEvent(WiFiEvent_t event);
@@ -46,7 +46,7 @@ private:
     bool _beginCredentials();
     bool _loadCredentials();
 
-    static const char *TAG;
+    static const char* TAG;
     WiFiItems _wifi;
     WiFiLog _log;
     // WiFiCredentialsNVS nvs;

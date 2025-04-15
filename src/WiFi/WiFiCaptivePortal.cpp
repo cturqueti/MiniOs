@@ -6,9 +6,10 @@
 // {
 // }
 
-WiFiCaptivePortal::WiFiCaptivePortal()
+WiFiCaptivePortal::WiFiCaptivePortal(WiFiLog log)
     : _server(80), _isRunning(false), _serverTaskHandle(NULL)
 {
+    _log = log;
 }
 
 WiFiCaptivePortal::~WiFiCaptivePortal()
@@ -76,46 +77,47 @@ void WiFiCaptivePortal::_setupDNS()
 void WiFiCaptivePortal::_setupServer()
 {
     _server.on("/", HTTP_GET, [this]()
-               { _sendFile("/index.html"); });
+        { _sendFile("/index.html"); });
 
     _server.on("/scan", HTTP_GET, [this]()
-               {
-        int n = WiFi.scanNetworks();
-        String json = "[";
-        for (int i = 0; i < n; ++i) {
-            if (i) json += ",";
-            json += "{";
-            json += "\"ssid\":\"" + WiFi.SSID(i) + "\",";
-            json += "\"rssi\":" + WiFi.RSSI(i);
-            json += "}";
-        }
-        json += "]";
-        _server.send(200, "application/json", json); });
+        {
+            int n = WiFi.scanNetworks();
+            String json = "[";
+            for (int i = 0; i < n; ++i) {
+                if (i) json += ",";
+                json += "{";
+                json += "\"ssid\":\"" + WiFi.SSID(i) + "\",";
+                json += "\"rssi\":" + WiFi.RSSI(i);
+                json += "}";
+            }
+            json += "]";
+            _server.send(200, "application/json", json); });
 
     _server.on("/styles.css", HTTP_GET, [this]()
-               { _sendFile("/styles.css"); });
+        { _sendFile("/styles.css"); });
     _server.on("/script.js", HTTP_GET, [this]()
-               { _sendFile("/script.js"); });
+        { _sendFile("/script.js"); });
 
     _server.on("/connect", HTTP_POST, [this]()
-               {
-        WiFiItems config;
-        config.ssid = _server.arg("ssid").c_str();
-        config.password = _server.arg("password").c_str();
-        config.dhcpFlag = true; // Ou pegar do formulário se adicionar essa opção
-        
-        if (_storage.saveCredentials(config)) {
-            _server.send(200, "application/json", "{\"status\":\"success\",\"message\":\"Credenciais salvas com sucesso\"}");
-        } else {
-            _server.send(500, "application/json", "{\"status\":\"error\",\"message\":\"Falha ao salvar credenciais\"}");
-        }
-        
-        // Opcional: encerrar o portal após conexão
-        delay(1000);
-        end(); });
+        {
+            WiFiItems config;
+            config.ssid = _server.arg("ssid").c_str();
+            config.password = _server.arg("password").c_str();
+            config.dhcpFlag = true; // Ou pegar do formulário se adicionar essa opção
+
+            if (_saveCredentials(config)) {
+                _server.send(200, "application/json", "{\"status\":\"success\",\"message\":\"Credenciais salvas com sucesso\"}");
+            }
+            else {
+                _server.send(500, "application/json", "{\"status\":\"error\",\"message\":\"Falha ao salvar credenciais\"}");
+            }
+
+            // Opcional: encerrar o portal após conexão
+            delay(1000);
+            end(); });
 
     _server.onNotFound([this]()
-                       { _sendFile("/index.html"); });
+        { _sendFile("/index.html"); });
 
     _server.begin();
 }
@@ -126,9 +128,9 @@ void WiFiCaptivePortal::_handleClient()
     _dnsServer.processNextRequest();
 }
 
-void WiFiCaptivePortal::_serverTask(void *pvParameters)
+void WiFiCaptivePortal::_serverTask(void* pvParameters)
 {
-    WiFiCaptivePortal *portal = (WiFiCaptivePortal *)pvParameters;
+    WiFiCaptivePortal* portal = (WiFiCaptivePortal*)pvParameters;
     while (true)
     {
         portal->_handleClient();
@@ -137,7 +139,7 @@ void WiFiCaptivePortal::_serverTask(void *pvParameters)
     vTaskDelete(NULL);
 }
 
-bool WiFiCaptivePortal::_loadFromLittleFS(const String &path)
+bool WiFiCaptivePortal::_loadFromLittleFS(const String& path)
 {
     String contentType = _getContentType(path);
     File file = LittleFS.open(path, "r");
@@ -149,7 +151,7 @@ bool WiFiCaptivePortal::_loadFromLittleFS(const String &path)
     return true;
 }
 
-void WiFiCaptivePortal::_sendFile(const String &path)
+void WiFiCaptivePortal::_sendFile(const String& path)
 {
     if (!_loadFromLittleFS(path))
     {
@@ -171,7 +173,7 @@ void WiFiCaptivePortal::_sendFile(const String &path)
     }
 }
 
-String WiFiCaptivePortal::_getContentType(const String &filename)
+String WiFiCaptivePortal::_getContentType(const String& filename)
 {
     if (filename.endsWith(".html"))
         return "text/html";
@@ -196,4 +198,27 @@ String WiFiCaptivePortal::_getContentType(const String &filename)
     else if (filename.endsWith(".xml"))
         return "text/xml";
     return "application/octet-stream";
+}
+
+bool WiFiCaptivePortal::_beginCredentials()
+{
+    if (_preferences.begin(nvs_namespace.data(), false))
+    {
+        return true;
+    }
+    if (_log == WiFiLog::ENABLE) {
+        LOG_ERROR("[WiFi] Error on load NVS");
+    }
+    ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);
+    return false;
+    return false;
+}
+
+bool WiFiCaptivePortal::_saveCredentials(WiFiItems wifi)
+{
+    bool success = true;
+    success &= _preferences.putString("ssid", wifi.ssid.c_str());
+    success &= _preferences.putString("password", wifi.password.c_str());
+    _preferences.end();
+    return true;
 }

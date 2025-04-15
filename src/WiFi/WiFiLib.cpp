@@ -9,46 +9,20 @@ WiFiLib::~WiFiLib()
 {
 }
 
-void WiFiLib::begin(WiFiItems wifi)
+void WiFiLib::begin()
 {
-    if (wifi.configLoaded)
+    if (_wifi.configLoaded)
     {
         if (isSsid())
         {
             // Start Wifi
-            connectToWiFi(wifi);
+            connectToWiFi(_wifi);
             // modify WiFiIcon Wifiservice
         }
         else
         {
             // _captivePortal.begin();
         }
-    }
-}
-
-void WiFiLib::begin(WiFiItems wifi, WiFiLog log)
-{
-    _log = log;
-    _wifi = wifi;
-
-    if (isCredentials())
-    {
-        // Start Wifi
-        connectToWiFi(wifi);
-        // modify WiFiIcon Wifiservice
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_INFO("[WIFI] Iniciado wifi como cliente");
-        }
-    }
-    else
-    {
-        // startAP
-        if (_log == WiFiLog::ENABLE)
-        {
-            LOG_WARN("[WIFI] Iniciando AP");
-        }
-        // _captivePortal.begin();
     }
 }
 
@@ -81,7 +55,7 @@ void WiFiLib::connectToWiFi(WiFiItems wifi)
     }
 
     WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info)
-                 { this->WiFiEvent(event); });
+        { this->WiFiEvent(event); });
 
     WiFi.begin(wifi.ssid.c_str(), wifi.password.c_str());
 
@@ -174,10 +148,14 @@ void WiFiLib::startAP()
 
 bool WiFiLib::_beginCredentials()
 {
-    // if (_preferences.begin(nvs_namespace.data(), true))
-    // {
-    //     return true;
-    // }
+    if (_preferences.begin(nvs_namespace.data(), true)) {
+        return true;
+    }
+    if (_log == WiFiLog::ENABLE)
+    {
+        LOG_ERROR("[WiFi] Error on load NVS");
+    }
+    ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);
     return false;
 }
 
@@ -199,5 +177,7 @@ bool WiFiLib::_loadCredentials()
     {
         LOG_ERROR("[WiFi] Don't have SSID");
     }
+    ERRORS_LIST.addError(ErrorCode::SSID_NOT_FOUND);
+
     return false;
 }
