@@ -5,11 +5,13 @@
 #include <LogLibrary.h>
 #include <vector>
 
-enum ErrorCode
-{
+enum ErrorCode {
     NONE,
     SSID_NOT_FOUND,
     NVS_BEGIN_ERROR,
+    LITTLEFS_MOUNT_ERROR,
+    FILE_NOT_FOUND,
+    CREDENTIALS_SAVE_ERROR,
     WARNING,
     INFO,
     SENSOR_FAIL,
@@ -18,9 +20,8 @@ enum ErrorCode
     ERROR_TYPE_COUNT
 };
 
-class ErrorLib
-{
-public:
+class ErrorLib {
+  public:
     ErrorLib();
     ~ErrorLib();
     void addError(ErrorCode error);
@@ -31,7 +32,7 @@ public:
 
     std::vector<ErrorCode> _errors;
 
-private:
+  private:
 };
 
 extern ErrorLib ERRORS_LIST;

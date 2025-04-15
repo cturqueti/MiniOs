@@ -1,18 +1,18 @@
 #include "WiFiItems.h"
 
-WiFiItems::WiFiItems() : ip(4),
-                         gateway(4),
-                         subnet(4),
-                         configLoaded(false),
-                         connectionStatus(0),
-                         power(0)
-{
-}
+WiFiItems::WiFiItems()
+    : ssid(""), password(""), hostname(""), dhcpFlag(true), ip(), gateway(), subnet(), configLoaded(false),
+      connectionStatus(0), power(0) {}
 
-void WiFiItems::reset()
-{
+void WiFiItems::reset() {
     ssid.clear();
     password.clear();
+    hostname.clear();
+    dhcpFlag = true;
+    ip = IPAddress();
+    gateway = IPAddress();
+    subnet = IPAddress();
     configLoaded = false;
     connectionStatus = 0;
+    power = 0;
 }
