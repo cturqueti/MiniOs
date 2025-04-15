@@ -14,18 +14,18 @@ void WiFiCredentialsNVS::terminate()
 }
 
 // Inicializa o NVS
-bool WiFiCredentialsNVS::begin(bool readOnly) const
+bool WiFiCredentialsNVS::begin(bool readOnly)
 {
     return preferences.begin(nvs_namespace, readOnly);
 }
 
 // Fecha o NVS
-void WiFiCredentialsNVS::end() const
+void WiFiCredentialsNVS::end()
 {
     preferences.end();
 }
 
-bool WiFiCredentialsNVS::getBool(const char *key, bool defaultValue) const
+bool WiFiCredentialsNVS::getBool(const char *key, bool defaultValue)
 {
     return preferences.getBool(key, defaultValue);
 }
@@ -101,7 +101,7 @@ bool WiFiCredentialsNVS::deleteCredentials()
     return success;
 }
 
-bool WiFiCredentialsNVS::configExists() const
+bool WiFiCredentialsNVS::configExists()
 {
     return hasCredentials();
 }
@@ -123,7 +123,7 @@ bool WiFiCredentialsNVS::clearCredentials()
 }
 
 // Verifica se existem credenciais salvas
-bool WiFiCredentialsNVS::hasCredentials() const
+bool WiFiCredentialsNVS::hasCredentials()
 {
     begin();
     bool hasCreds = preferences.getBool("configLoaded", false);

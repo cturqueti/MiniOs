@@ -1,8 +1,13 @@
 #include "WiFiCaptivePortal.h"
 #include <LittleFS.h>
 
-WiFiCaptivePortal::WiFiCaptivePortal(WiFiStorageInterface &storage)
-    : _server(80), _isRunning(false), _serverTaskHandle(NULL), _storage(storage)
+// WiFiCaptivePortal::WiFiCaptivePortal(WiFiStorageInterface &storage)
+//     : _server(80), _isRunning(false), _serverTaskHandle(NULL), _storage(storage)
+// {
+// }
+
+WiFiCaptivePortal::WiFiCaptivePortal()
+    : _server(80), _isRunning(false), _serverTaskHandle(NULL)
 {
 }
 

@@ -1,13 +1,12 @@
 #include "WiFiLib.h"
 
-WiFiLib::WiFiLib() : _captivePortal(jsonStorage)
+WiFiLib::WiFiLib(WiFiLog log)
 {
-    _log = WiFiLog::DISABLE;
-    nvs.initialize();
+    _log = log;
+    _beginCredentials();
 }
 WiFiLib::~WiFiLib()
 {
-    nvs.terminate();
 }
 
 void WiFiLib::begin(WiFiItems wifi)
@@ -22,7 +21,7 @@ void WiFiLib::begin(WiFiItems wifi)
         }
         else
         {
-            _captivePortal.begin();
+            // _captivePortal.begin();
         }
     }
 }
@@ -49,7 +48,7 @@ void WiFiLib::begin(WiFiItems wifi, WiFiLog log)
         {
             LOG_WARN("[WIFI] Iniciando AP");
         }
-        _captivePortal.begin();
+        // _captivePortal.begin();
     }
 }
 
@@ -166,4 +165,39 @@ void WiFiLib::WiFiEvent(WiFiEvent_t event)
         }
         break;
     }
+}
+
+void WiFiLib::startAP()
+{
+    // _captivePortal.begin();
+}
+
+bool WiFiLib::_beginCredentials()
+{
+    // if (_preferences.begin(nvs_namespace.data(), true))
+    // {
+    //     return true;
+    // }
+    return false;
+}
+
+bool WiFiLib::_loadCredentials()
+{
+    _beginCredentials();
+    _wifiConfig.ssid = _preferences.getString("ssid", "").c_str();
+    _wifiConfig.password = _preferences.getString("password", "").c_str();
+    _preferences.end();
+    if (_wifiConfig.ssid != "")
+    {
+        if (_log == WiFiLog::ENABLE)
+        {
+            LOG_INFO("[WiFi] Loaded SSID: %s", _wifiConfig.ssid);
+        }
+        return true;
+    }
+    if (_log == WiFiLog::ENABLE)
+    {
+        LOG_ERROR("[WiFi] Don't have SSID");
+    }
+    return false;
 }

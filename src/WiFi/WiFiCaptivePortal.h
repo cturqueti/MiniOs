@@ -1,5 +1,6 @@
 #pragma once
-#include "WiFiStorageInterface.h"
+// #include "WiFiStorageInterface.h"
+#include "WiFiItems.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <DNSServer.h>
@@ -13,7 +14,8 @@
 class WiFiCaptivePortal
 {
 public:
-    WiFiCaptivePortal(WiFiStorageInterface &storage);
+    // WiFiCaptivePortal(WiFiStorageInterface &storage);
+    WiFiCaptivePortal();
     ~WiFiCaptivePortal();
 
     void begin();
@@ -34,5 +36,5 @@ private:
     WebServer _server;
     bool _isRunning;
     TaskHandle_t _serverTaskHandle;
-    WiFiStorageInterface &_storage;
+    // WiFiStorageInterface &_storage;
 };
