@@ -1,69 +1,605 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conectar à Rede</title>
-</head>
-<body>
-
-    <h1>Configuração WiFi</h1>
-    <div id="wifi-form">
-        <div class="form-group">
-            <label for="ssid">Rede Wi-Fi</label>
-            <select id="ssid" name="ssid" required>
-                <option value="">Selecione uma rede...</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="password">Senha</label>
-            <input type="password" id="password" name="password" placeholder="Digite a senha">
-        </div>
-
-        <div class="form-group">
-            <label for="hostname">Nome do Dispositivo (mDNS)</label>
-            <input type="text" id="hostname" name="hostname" placeholder="ex: meuesp32" required>
-            <small>Será usado como .local (ex: meuesp32.local)</small>
-        </div>
+<html style="font-size: 16px;" lang="pt">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="utf-8">
+        <meta name="keywords" content="Conexão">
+        <meta name="description" content="">
+        <title>Página Inicial</title>
+        <link rel="stylesheet" href="nicepage.css" media="screen">
+        <link rel="stylesheet" href="index.css" media="screen">
+        <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
+        <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
+        <meta name="generator" content="Nicepage 7.7.3, nicepage.com">
+        <meta name="referrer" content="origin">
         
-        <div class="form-group">
-            <label for="ip-mode">Tipo de Conexão:</label>
-            <select id="ip-mode" name="ip-mode">
-                <option value="dhcp">DHCP (Automático)</option>
-                <option value="static">IP Estático</option>
-            </select>
-        </div>
+        <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
+        <script type="application/ld+json">{
+            "@context": "http://schema.org",
+            "@type": "Organization",
+            "name": "",
+            "logo": "images/default-logo.png"
+            }
+        </script>
+        <meta name="theme-color" content="#478ac9">
+        <meta property="og:title" content="Página Inicial">
+        <meta property="og:type" content="website">
+        <meta data-intl-tel-input-cdn-path="intlTelInput/">
+    </head>
+    <body data-home-page="Página-Inicial.html" data-home-page-title="Página Inicial" data-path-to-root="./" data-include-products="false" class="u-body u-xl-mode" data-lang="pt">
+        <header class="u-clearfix u-header u-sticky u-sticky-2dcf" id="header" data-animation-name="" data-animation-duration="0" data-animation-delay="0" data-animation-direction="">
+            <div class="u-clearfix u-sheet u-valign-middle-lg u-valign-middle-md u-valign-middle-sm u-valign-middle-xs u-sheet-1">
+                <div class="custom-expanded u-border-1 u-border-palette-1-dark-1 u-container-style u-group u-opacity u-opacity-90 u-palette-1-base u-radius u-shape-round u-group-1">
+                    <div class="u-container-layout u-container-layout-1">
+                        <h2 class="u-text u-text-default u-text-grey-90 u-text-1">Conexão</h2>
+                        <a href="#" class="u-image u-logo u-image-1">
+                        <img src="images/default-logo.png" class="u-logo-image u-logo-image-1">
+                        </a>
+                        <nav class="u-menu u-menu-one-level u-offcanvas u-menu-1">
+                            <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px;">
+                                <a class="u-button-style u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-top-bottom-menu-spacing u-hamburger-link u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#">
+                                    <svg class="u-svg-link" viewBox="0 0 24 24"><use xlink:href="#menu-hamburger"></use></svg>
+                                    <svg class="u-svg-content" version="1.1" id="menu-hamburger" viewBox="0 0 16 16" x="0px" y="0px" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+                                        <g>
+                                            <rect y="1" width="16" height="2"></rect><rect y="7" width="16" height="2"></rect>
+                                            <rect y="13" width="16" height="2"></rect>
+                                        </g>
+                                    </svg>
+                                </a>
+                            </div>
+                            <div class="u-custom-menu u-nav-container">
+                                <ul class="u-nav u-unstyled u-nav-1">
+                                    <li class="u-nav-item">
+                                        <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="./#block-2" data-page-id="25213846" style="padding: 10px 20px;">Seleção de rede</a>
+                                    </li>
+                                    <li class="u-nav-item">
+                                        <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="./#block-3" data-page-id="25213846" style="padding: 10px 20px;">Ip estático</a>
+                                    </li>
+                                    <li class="u-nav-item">
+                                        <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="./#block-4" data-page-id="25213846" target="_blank" style="padding: 10px 20px;">Ajuda</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="u-custom-menu u-nav-container-collapse">
+                                <div class="u-black u-container-style u-inner-container-layout u-opacity u-opacity-95 u-sidenav">
+                                    <div class="u-inner-container-layout u-sidenav-overflow">
+                                        <div class="u-menu-close"></div>
+                                        <ul class="u-align-center u-nav u-popupmenu-items u-unstyled u-nav-2">
+                                            <li class="u-nav-item">
+                                                <a class="u-button-style u-nav-link" href="./#block-2" data-page-id="25213846">Seleção de rede</a>
+                                            </li>
+                                            <li class="u-nav-item">
+                                                <a class="u-button-style u-nav-link" href="./#block-3" data-page-id="25213846">Ip estático</a>
+                                            </li>
+                                            <li class="u-nav-item">
+                                                <a class="u-button-style u-nav-link" href="./#block-4" data-page-id="25213846" target="_blank">Ajuda</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            <div class="u-black u-menu-overlay u-opacity u-opacity-70"></div>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-        <!-- Campos de IP Estático (aparecem apenas quando selecionado) -->
-        <div id="ip-static-fields" class="ip-static-fields">
-            <div class="form-group">
-                <label for="static-ip">Endereço IP:</label>
-                <input type="text" id="static-ip" name="static-ip" placeholder="192.168.1.100" 
-                        pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+        <section class="u-clearfix u-grey-50 u-section-1" id="block-1">
+            <div class="u-clearfix u-sheet u-valign-middle-lg u-valign-middle-md u-valign-middle-sm u-valign-middle-xs u-sheet-1">
+                <h1 class="u-text u-text-default u-text-1">Configuração de rede </h1>
+                <p class="u-text u-text-black u-text-default u-text-2">O sistema não encontrou configurações de rede válidas, necessário selecionar a rede e o modo de operação.</p>
             </div>
-            
-            <div class="form-group">
-                <label for="static-gateway">Gateway:</label>
-                <input type="text" id="static-gateway" name="static-gateway" placeholder="192.168.1.1" 
-                        pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+        </section>
+        <section class="u-clearfix u-grey-25 u-section-2" id="block-2">
+            <div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
+                <div class="u-border-1 u-border-grey-75 u-container-style u-group u-palette-1-base u-radius u-shape-round u-group-1">
+                    <div class="u-container-layout u-valign-bottom-lg u-valign-bottom-md u-valign-bottom-sm u-valign-bottom-xs u-container-layout-1">
+                        <h2 class="u-text u-text-default u-text-1">Seleção de rede</h2>
+                        <div class="u-form u-form-1">
+                        <form id="connection_data" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="email" name="form" style="padding: 10px;">
+                            <div class="u-form-group u-form-select u-form-group-1">
+                            <label for="select-ff4a" class="u-label">Rede:</label>
+                            <div class="u-form-select-wrapper">
+                                <select id="ssid" name="ssid" class="u-input u-input-rectangle" required="required">
+                                    <option value="0" data-calc="0" selected="selected">Selecione uma rede...</option>
+                                    <option value="1" data-calc="1">Item 2</option>
+                                    <option value="2" data-calc="2">Item 3</option>
+                                </select>
+                                <svg class="u-caret u-caret-svg" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="16px" height="16px" viewBox="0 0 16 16" style="fill:currentColor;" xml:space="preserve"><polygon class="st0" points="8,12 2,4 14,4 "></polygon></svg>
+                            </div>
+                            </div>
+                            <div class="u-form-group u-form-group-2" data-dependency="[{&quot;action&quot;:&quot;hide&quot;,&quot;field&quot;:&quot;ssid&quot;,&quot;condition&quot;:&quot;equal&quot;,&quot;value&quot;:0}]">
+                            <label for="password" class="u-label">Senha:</label>
+                            <input type="password" id="password" name="password" class="u-input u-input-rectangle">
+                            </div>
+                            <div class="u-form-checkbox u-form-group u-form-group-3" data-dependency="[{&quot;action&quot;:&quot;hide&quot;,&quot;field&quot;:&quot;ssid&quot;,&quot;condition&quot;:&quot;equal&quot;,&quot;value&quot;:&quot;0&quot;}]">
+                                <input type="checkbox" id="checkbox-dhcp" name="dhcp-mode" value="On" class="u-field-input" checked="checked">
+                                <label for="checkbox-dhcp" class="u-field-label">DHCP</label>
+                            </div>
+                            <div class="u-align-left u-form-group u-form-submit" id="connect-button-container" style="display: none;">
+                                <button type="submit" class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-btn-1" id="connect-button">Conectar</button>
+                            </div>
+                            <!-- <div class="u-form-send-message u-form-send-success"> Obrigado! A sua mensagem foi enviada. </div>
+                            <div class="u-form-send-error u-form-send-message"> Não foi possível enviar a sua mensagem. Por favor, corrija os erros e tente novamente. </div> -->
+                            <!-- <input type="hidden" value="" name="recaptchaResponse">
+                            <input type="hidden" name="formServices" value="88971731-6572-ea76-9ca2-2ff4ec73f79b"> -->
+                        </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="static-subnet">Máscara de Rede:</label>
-                <input type="text" id="static-subnet" name="static-subnet" placeholder="255.255.255.0" 
-                        pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+        </section>
+        <section class="u-clearfix u-grey-25 u-section-3" id="block-3">
+            <div class="u-clearfix u-sheet u-valign-middle-lg u-valign-middle-md u-valign-middle-sm u-valign-middle-xs u-sheet-1">
+                <div class="u-border-1 u-border-grey-75 u-container-style u-group u-palette-1-base u-radius u-shape-round u-group-1" title="Ip estático">
+                    <div class="u-container-layout u-valign-bottom-lg u-valign-bottom-md u-valign-bottom-sm u-valign-bottom-xs u-container-layout-1">
+                        <h2 class="u-text u-text-default u-text-1">Configuração de rede estática</h2>
+                        <div class="u-form u-form-1">
+                            <form action="https://forms.nicepagesrv.com/v2/form/process" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="email" name="form-1" style="padding: 10px;">
+                                <div class="u-form-group u-form-group-3">
+                                    <label for="mDns" class="u-label">Meu nome de rede</label>
+                                    <input type="text" id="mDns" name="mDns" class="u-input u-input-rectangle" placeholder="Insira o nome de rede">
+                                </div>
+                                <div class="u-form-group u-form-group-3">
+                                    <label for="static-ip" class="u-label">IP:</label>
+                                    <div style="display: flex; gap: 5px;">
+                                    <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="ip1" name="ip1" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                    <span>.</span>
+                                    <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="ip2" name="ip2" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                    <span>.</span>
+                                    <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="ip3" name="ip3" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                    <span>.</span>
+                                    <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="ip4" name="ip4" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                    </div>
+                                </div>
+                                <div class="u-form-group u-form-group-3">
+                                    <label for="static-gateway" class="u-label">Gateway</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-gateway1" name="static-gateway1" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                        <span>.</span>
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-gateway2" name="static-gateway2" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                        <span>.</span>
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-gateway3" name="static-gateway3" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                        <span>.</span>
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-gateway4" name="static-gateway4" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                    </div>
+                                </div>
+                                <div class="u-form-group u-form-group-3">
+                                    <label for="static-subnet" class="u-label">Máscara de rede</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-subnet1" name="static-subnet1" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                        <span>.</span>
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-subnet2" name="static-subnet2" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                        <span>.</span>
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-subnet3" name="static-subnet3" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                        <span>.</span>
+                                        <input type="text" inputmode="numeric" min="0" max="255" class="u-input u-input-rectangle" id="static-subnet4" name="static-subnet4" required oninput="validateOctet(this)" placeholder="0" disabled>
+                                    </div>
+                                </div>
+                                <div class="u-align-left u-form-group u-form-submit">
+                                    <button type="button" id="save-config-button" class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-btn-1">Salvar</button>
+                                <!-- <a href="#" class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-btn-1">Salvar</a> -->
+                                <!-- <input type="submit" value="submit" class="u-form-control-hidden"> -->
+                                </div>
+                                <!-- <div class="u-form-send-message u-form-send-success"> Obrigado! A sua mensagem foi enviada. </div>
+                                <div class="u-form-send-error u-form-send-message"> Não foi possível enviar a sua mensagem. Por favor, corrija os erros e tente novamente. </div>
+                                <input type="hidden" value="" name="recaptchaResponse">
+                                <input type="hidden" name="formServices" value="88971731-6572-ea76-9ca2-2ff4ec73f79b"> -->
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <button type="button" id="connect-btn">Conectar</button>
-        <div id="status" class="status"></div>
-    </div>
+        </section>
+        <section class="u-clearfix u-grey-50 u-section-4" id="block-4">
+            <div class="u-clearfix u-sheet u-sheet-1">
+                <h1 class="u-text u-text-default u-text-1">Ajuda</h1>
+                <div class="data-layout-selected u-clearfix u-expanded-width u-layout-wrap u-layout-wrap-1">
+                    <div class="u-layout">
+                        <div class="u-layout-row">
+                            <div class="u-size-30">
+                                <div class="u-layout-col">
+                                    <div class="u-container-style u-grey-15 u-layout-cell u-size-60 u-layout-cell-1">
+                                        <div class="u-container-layout u-container-layout-1">
+                                            <p class="u-text u-text-default u-text-2">Rede - selecione a rede válida<br>Senha - deve conter X caracteres </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <div class="u-size-30">
+                            <div class="u-layout-col">
+                                <div class="u-container-style u-layout-cell u-size-30 u-layout-cell-2">
+                                    <div class="u-container-layout u-container-layout-2">
+                                    <p class="u-text u-text-default u-text-3">Maiores duvidas ligue&nbsp;<br>+55 (xx) xxxxx-xxxx
+                                    </p>
+                                    </div>
+                                </div>
+                                <div class="u-container-style u-layout-cell u-size-30 u-layout-cell-3">
+                                    <div class="u-container-layout u-container-layout-3">
+                                    <p class="u-text u-text-default u-text-4">Endeteço: Rua xxxxx</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
+        <!-- Rodapé -->
+        <footer class="u-align-center u-clearfix u-container-align-center u-footer u-grey-80 u-footer" id="footer">
+            <div class="u-clearfix u-sheet u-sheet-1">
+                <p class="u-small-text u-text u-text-variant u-text-1">Pagina feita por Carlos Augusto D'Orazio Turqueti</p>
+            </div>
+        </footer>
+        <!-- <section class="u-backlink u-clearfix u-grey-80">
+            <p class="u-text"><span>This site was created with the </span>
+                <a class="u-link" href="https://nicepage.com/" target="_blank" rel="nofollow">
+                    <span>Nicepage</span>
+                </a>
+            </p>
+        </section> -->
+
+        <!-- Pagina Pop-Up -->
+        <section class="u-align-center u-black u-clearfix u-container-align-center u-container-style u-dialog-block u-opacity u-opacity-70 u-valign-middle u-dialog-section-9" id="connection-confirm">
+            <div class="u-align-center u-container-align-center u-container-style u-dialog u-opacity u-opacity-95 u-palette-5-dark-2 u-radius u-shape-round u-dialog-1">
+                <div class="u-container-layout u-valign-middle u-container-layout-1">
+                    <h6 class="u-text u-text-default u-text-1">Aguarde</h6>
+                    <h2 class="u-text u-text-default u-text-2">Conectando... </h2>
+                    <div class="u-expanded-width-xs u-form u-form-1">
+                        <form class="u-clearfix u-form-spacing-28 u-form-vertical u-inner-form" style="padding: 0px;">
+                            <div class="u-align-center u-form-group u-form-submit u-form-group-1">
+                                <!-- Botão "Salvar" que envia o comando -->
+                                <button type="button" id= "save-SSID-button" class="u-black u-btn u-btn-round u-btn-submit u-button-style u-radius u-btn-1" >Salvar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <button class="u-dialog-close-button u-icon u-text-grey-50 u-icon-1">
+                    <svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 413.348 413.348" style="">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-5801">
+                        </use>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve" class="u-svg-content" viewBox="0 0 413.348 413.348" id="svg-5801">
+                        <path d="m413.348 24.354-24.354-24.354-182.32 182.32-182.32-182.32-24.354 24.354 182.32 182.32-182.32 182.32 24.354 24.354 182.32-182.32 182.32 182.32 24.354-24.354-182.32-182.32z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </section>
     
-    <div id="loading" class="loading">
-        <div class="loader"></div>
-        <p id="loading-text">Conectando...</p>
-    </div>
+        <style>
+            .u-dialog-section-9 .u-dialog-1 {
+                width: 566px;
+                min-height: 431px;
+                --radius: 30px;
+                box-shadow: 2px 2px 8px 0px rgba(26,26,26,1);
+                margin: 60px auto;
+            }
 
-</body>
+            .u-dialog-section-9 .u-container-layout-1 {
+                padding: 40px 30px;
+            }
+
+            .u-dialog-section-9 .u-text-1 {
+                text-transform: uppercase;
+                letter-spacing: 5px;
+                margin: 0 auto;
+            }
+
+            .u-dialog-section-9 .u-text-2 {
+                font-size: 2.5rem;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                margin: 21px auto 0;
+            }
+
+            .u-dialog-section-9 .u-form-1 {
+                height: 104px;
+                width: 400px;
+                margin: 19px auto 0;
+            }
+
+            .u-dialog-section-9 .u-form-group-1 {
+                width: 100%;
+            }
+
+            .u-dialog-section-9 .u-btn-1 {
+                padding-left: 0;
+                padding-right: 0;
+                background-image: none;
+                border-style: none;
+                text-transform: none;
+                width: 100%;
+                --radius: 20px;
+                box-shadow: 5px 5px 20px 0 rgba(0,0,0,0.4);
+            }
+
+            .u-block-fffc-6 {
+                width: 100%;
+            }
+
+            .u-block-fffc-7 {
+                font-size: 1rem;
+            }
+
+            .u-dialog-section-9 .u-icon-1 {
+                width: 15px;
+                height: 15px;
+                left: auto;
+                top: 17px;
+                position: absolute;
+                right: 16px;
+            }
+
+            @media (max-width: 991px) {
+                .u-dialog-section-9 .u-container-layout-1 {
+                    padding-bottom: 30px;
+                }
+            }
+
+            @media (max-width: 767px) {
+                .u-dialog-section-9 .u-dialog-1 {
+                    width: 540px;
+                }
+
+                .u-dialog-section-9 .u-container-layout-1 {
+                    padding-top: 30px;
+                    padding-left: 40px;
+                    padding-right: 40px;
+                }
+            }
+
+            @media (max-width: 575px) {
+                .u-dialog-section-9 .u-dialog-1 {
+                    width: 340px;
+                    min-height: 400px;
+                    height: auto;
+                }
+
+                .u-dialog-section-9 .u-container-layout-1 {
+                    padding-top: 40px;
+                    padding-left: 25px;
+                    padding-right: 25px;
+                }
+
+                .u-dialog-section-9 .u-text-2 {
+                    font-size: 2.0833333333333335rem;
+                }
+
+                .u-dialog-section-9 .u-form-1 {
+                    height: 152px;
+                    margin-right: initial;
+                    margin-left: initial;
+                    width: auto;
+                }
+            }
+        </style>
+
+        <!-- Script de carregamento -->
+        <script>
+            
+
+            const checkbox = document.getElementById('checkbox-dhcp');
+            const fieldsToToggle = [
+                'ip1', 'ip2', 'ip3', 'ip4',
+                'static-gateway1', 'static-gateway2', 'static-gateway3', 'static-gateway4',
+                'static-subnet1', 'static-subnet2', 'static-subnet3', 'static-subnet4'
+            ];
+        
+            // Executa ao carregar a página
+            window.addEventListener('DOMContentLoaded', toggleFields);
+
+            // Executa ao mudar o checkbox
+            checkbox.addEventListener('change', toggleFields);
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const ssidSelect = document.getElementById('ssid');
+                const connectButtonContainer = document.getElementById('connect-button-container');
+
+                window.location.hash = "#block-1"; // iniciar com fogo no primeiro bloco
+            // Busca redes disponíveis
+            fetch('/scan')
+                .then(response => {
+                    if (!response.ok) throw new Error('Falha ao scanear redes');
+                    return response.json();
+                })
+                .then(networks => {
+                
+                    // Limpa opções existentes (exceto a primeira)
+                    while (ssidSelect.options.length > 1) {
+                        ssidSelect.remove(1);
+                    }
+                    
+                    // Adiciona cada rede como nova opção
+                    networks.forEach(network => {
+                        const option = new Option(
+                            `${network.ssid} (${network.rssi} dBm)`,  // Texto visível
+                            network.ssid,                             // Valor
+                            false,                                    // Não selecionado por padrão
+                            network.ssid === ssidSelect.dataset.current // Seleciona se for a rede atual
+                        );
+                        ssidSelect.add(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    // Opcional: Mostrar mensagem de erro na interface
+                    const errorElement = document.createElement('div');
+                    errorElement.className = 'error-message';
+                    errorElement.textContent = 'Não foi possível carregar as redes Wi-Fi.';
+                    document.querySelector('.u-form-group-1').appendChild(errorElement);
+                });
+
+                ssidSelect.addEventListener('change', function() {
+                    if (this.value && this.value !== "") {
+                        connectButtonContainer.style.display = 'block';
+                    } else {
+                        connectButtonContainer.style.display = 'none';
+                    }
+                });
+            });
+        
+            function toggleFields() {
+                const disabled = checkbox.checked;
+                fieldsToToggle.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) input.disabled = disabled;
+                });
+            }
+        </script>
+        <!-- Enviar "try-connect" -->
+        <script>
+            // Evento de clique no botão teste de conexão
+            const connectBtn = document.getElementById("connect-button");
+            if (connectBtn) {
+                document.getElementById("connect-button").addEventListener("click", async function(e) {
+                    e.preventDefault();
+                    // 1. ABRE O POPUP
+                    document.getElementById("connection-confirm").style.display = "block";
+
+                    const formData = {
+                        ssid: document.getElementById('ssid').value,
+                        password: document.getElementById('password').value,
+                        dhcp: document.getElementById('checkbox-dhcp').checked
+                    };
+                    // 2. ENVIA "try-connect" PARA O ESP32
+
+                    try {
+                        // Envia para o ESP32
+                        const response = await fetch('/try-connect', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(formData) // Converte para JSON
+                        });
+
+                        if (response.ok) {
+                            alert('Configuração enviada com sucesso!');
+                        } else {
+                            throw new Error('Falha no envio');
+                        }
+                    } catch (error) {
+                        console.error('Erro:', error);
+                        alert('Erro ao conectar: ' + error.message);
+                    }
+                });
+            }
+            // Evento de clique no botão salvar
+            const saveSSIDBtn = document.getElementById("save-SSID-button");
+            if (saveSSIDBtn) {
+                document.getElementById("save-SSID-button").addEventListener("click", async function(e) {
+                    e.preventDefault();
+
+                    const formData = {
+                        ssid: document.getElementById('ssid').value,
+                        password: document.getElementById('password').value,
+                        dhcp: document.getElementById('checkbox-dhcp').checked
+                    };
+                    try {
+                        // Envia para o ESP32
+                        const response = await fetch('/save-ssid', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(formData) // Converte para JSON
+                        });
+
+                        if (response.ok) {
+                            alert('Configuração enviada com sucesso!');
+                        } else {
+                            throw new Error('Falha no envio');
+                        }
+                    } catch (error) {
+                        console.error('Erro:', error);
+                        alert('Erro ao conectar: ' + error.message);
+                    }
+                    document.getElementById("connection-confirm").style.display = "none";
+                });
+            }
+
+            const saveConfigBtn = document.getElementById("save-config-button");
+            if (saveConfigBtn){
+                document.getElementById("save-config-button").addEventListener("click", async function(e) {
+                    e.preventDefault();
+                    document.getElementById("connection-confirm").style.display = "block";
+                    const formData = {
+                        mDns: document.getElementById('mDns').value,
+                        staticIp: getIpAddress(),
+                        gateway: getGateway(),
+                        subnet: getSubnetMask()
+                    };
+                    try {
+                        // Envia para o ESP32
+                        const response = await fetch('/save-config', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(formData) // Converte para JSON
+                        });
+
+                        if (response.ok) {
+                            alert('Configuração enviada com sucesso!');
+                        } else {
+                            throw new Error('Falha no envio');
+                        }
+                    } catch (error) {
+                        console.error('Erro:', error);
+                        alert('Erro ao conectar: ' + error.message);
+                    }
+                    document.getElementById("connection-confirm").style.display = "none";
+                });
+            }
+            // Fecha o popup
+            document.querySelector(".u-dialog-close-button").addEventListener("click", function() {
+                document.getElementById("connection-confirm").style.display = "none";
+            });
+        
+        
+        </script>
+
+        <!-- Funções genéricas -->
+        <script>
+            function validateOctet(input) {
+                if (input.value.length > 3) input.value = input.value.slice(0, 3);
+                let val = parseInt(input.value);
+                if (val > 255) input.value = 255;
+                if (val < 0 || isNaN(val)) input.value = '';
+            }
+        
+            function getIpAddress() {
+            // Função para juntar os campos em uma string IP
+                return [
+                    document.getElementById('ip1').value,
+                    document.getElementById('ip2').value,
+                    document.getElementById('ip3').value,
+                    document.getElementById('ip4').value
+                ].join('.');
+            }
+
+            function getSubnetMask() {
+                return [
+                    document.getElementById('subnet1').value,
+                    document.getElementById('subnet2').value,
+                    document.getElementById('subnet3').value,
+                    document.getElementById('subnet4').value
+                ].join('.');
+            }
+
+            function getGateway() {
+                return [
+                    document.getElementById('static-gateway1').value,
+                    document.getElementById('static-gateway2').value,
+                    document.getElementById('static-gateway3').value,
+                    document.getElementById('static-gateway4').value
+                ].join('.');
+            }
+
+        </script>
+
+    </body>
 </html>

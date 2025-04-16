@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conectar à Rede</title>
+</head>
+<body>
+
+    <h1>Configuração WiFi</h1>
+    <div id="wifi-form">
+        <div class="form-group">
+            <label for="ssid">Rede Wi-Fi</label>
+            <select id="ssid" name="ssid" required>
+                <option value="">Selecione uma rede...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="Digite a senha">
+        </div>
+
+        <div class="form-group">
+            <label for="hostname">Nome do Dispositivo (mDNS)</label>
+            <input type="text" id="hostname" name="hostname" placeholder="ex: meuesp32" required>
+            <small>Será usado como .local (ex: meuesp32.local)</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="ip-mode">Tipo de Conexão:</label>
+            <select id="ip-mode" name="ip-mode">
+                <option value="dhcp">DHCP (Automático)</option>
+                <option value="static">IP Estático</option>
+            </select>
+        </div>
+
+        <!-- Campos de IP Estático (aparecem apenas quando selecionado) -->
+        <div id="ip-static-fields" class="ip-static-fields">
+            <div class="form-group">
+                <label for="static-ip">Endereço IP:</label>
+                <input type="text" id="static-ip" name="static-ip" placeholder="192.168.1.100" 
+                        pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+            </div>
+            
+            <div class="form-group">
+                <label for="static-gateway">Gateway:</label>
+                <input type="text" id="static-gateway" name="static-gateway" placeholder="192.168.1.1" 
+                        pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+            </div>
+            
+            <div class="form-group">
+                <label for="static-subnet">Máscara de Rede:</label>
+                <input type="text" id="static-subnet" name="static-subnet" placeholder="255.255.255.0" 
+                        pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+            </div>
+        </div>
+        
+        <button type="button" id="connect-btn">Conectar</button>
+        <div id="status" class="status"></div>
+    </div>
+    
+    <div id="loading" class="loading">
+        <div class="loader"></div>
+        <p id="loading-text">Conectando...</p>
+    </div>
+
+</body>
+</html>
