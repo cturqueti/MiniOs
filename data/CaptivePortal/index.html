@@ -32,11 +32,19 @@
         <h2>Seleção de Rede</h2>
         <form id="wifi-form">
             <label for="ssid">Rede:</label>
-            <select id="ssid" name="ssid" required>
-                <option value="">Selecione uma rede...</option>
-                <!-- As redes serão preenchidas via JavaScript -->
-            </select>
-            
+            <div class="selector">
+                <select id="ssid" name="ssid" required>
+                  <option value="">Selecione uma rede...</option>
+                  <!-- As redes serão preenchidas via JavaScript -->
+                </select>
+                <button id="refresh-wifi" type="button" title="Atualizar redes" class="refresh-button">
+                  <svg viewBox="0 0 150 151" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fill="currentColor"
+                      d="m 111.9,61.57 a 5.36,5.36 0 0 1 10.71,0 61.3,61.3 0 0 1 -105.07,42.91 v 12.35 a 5.36,5.36 0 0 1 -10.72,0 V 89.31 A 5.36,5.36 0 0 1 12.18,84 H 40 a 5.36,5.36 0 1 1 0,10.71 H 23 a 50.6,50.6 0 0 0 88.87,-33.1 z M 106.6,5.36 a 5.36,5.36 0 1 1 10.71,0 V 33.14 A 5.36,5.36 0 0 1 112,38.49 H 84.44 a 5.36,5.36 0 1 1 0,-10.71 H 99 A 50.6,50.6 0 0 0 10.71,61.57 5.36,5.36 0 1 1 0,61.57 61.31,61.31 0 0 1 91.07,8 61.83,61.83 0 0 1 106.6,20.27 Z" />
+                  </svg>
+                </button>
+            </div>
             <div id="password-field" class="hidden">
                 <label for="password">Senha:</label>
                 <input type="password" id="password" name="password">
@@ -151,7 +159,7 @@
         </div>
     </div>
 
-
+    <script src="mock.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

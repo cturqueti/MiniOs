@@ -1,53 +1,3 @@
-// retirar antes da versão final
-// Interceptar chamadas fetch
-const originalFetch = window.fetch;
-window.fetch = async (url, options) => {
-    console.log(`[mock] fetch para: ${url}`);
-    
-    if (url === '/scan') {
-        return new Response(JSON.stringify([
-            { ssid: 'sideout', rssi: -42 },
-            { ssid: 'guest_wifi', rssi: -70 }
-        ]), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
-
-    if (url === '/connect') {
-        console.log(`[mock] Conectando à rede: ${JSON.parse(options.body).ssid}`);
-        
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        return new Response(JSON.stringify({
-            message: 'Conectado com sucesso à rede ' + JSON.parse(options.body).ssid
-        }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
-
-    if (url === '/save-wifi-config') {
-        return new Response(JSON.stringify({
-            message: 'Configurações salvas com sucesso!'
-        }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
-    if (url === '/save-wifi-credentials') {
-        return new Response(JSON.stringify({
-            message: 'Configurações salvas com sucesso!'
-        }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
-
-    // Fallback: chamada real
-    return originalFetch(url, options);
-};
-// retirar antes da versão final
 
 // Controle do modal
 const modalController = (function() {
@@ -107,24 +57,51 @@ ssidSelect.addEventListener('change', function() {
 
 // Busca redes WiFi disponíveis
 window.addEventListener('DOMContentLoaded', function() {
-    // Busca redes WiFi disponíveis
-    fetch('/scan')
-        .then(response => response.json())
-        .then(networks => {
-            networks.forEach(network => {
+    const ssidSelect = document.getElementById('ssid'); // Certifique-se que este ID existe no seu HTML
+    const refreshButton = document.getElementById('refresh-wifi');
+
+    function scanWifi() {
+        // Limpa as opções antigas
+        ssidSelect.innerHTML = '<option value="">Selecione uma rede...</option>';
+
+        fetch('/scan-wifi')
+            .then(response => response.json())
+            .then(networks => {
+                networks.forEach(network => {
+                    const option = document.createElement('option');
+                    option.value = network.ssid;
+                    
+                    // Ícone e texto baseado no status da rede
+                    const lockIcon = network.open ? '🔓' : '🔒';
+                    const authStatus = network.open ? ' (Aberta)' : ' (Protegida)';
+                    
+                    option.textContent = `${lockIcon} ${network.ssid} ${authStatus} (${network.rssi}dBm)`;
+                    
+                    // Adiciona atributo data-open para uso posterior
+                    option.dataset.open = network.open;
+                    
+                    // Opcional: estilo diferente para redes abertas
+                    if (network.open) {
+                        option.style.color = '#2ecc71'; // Verde para redes abertas
+                    }
+                    
+                    ssidSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao buscar redes:', error);
                 const option = document.createElement('option');
-                option.value = network.ssid;
-                option.textContent = `${network.ssid} (${network.rssi}dBm)`;
+                option.textContent = '❌ Erro ao carregar redes';
                 ssidSelect.appendChild(option);
             });
-        })
-        .catch(error => {
-            console.error('Erro ao buscar redes:', error);
-            const option = document.createElement('option');
-            option.textContent = 'Erro ao carregar redes';
-            ssidSelect.appendChild(option);
-        });
+    }
+
+    // Executa ao carregar a página
+    scanWifi();
+
+    refreshButton.addEventListener('click', scanWifi);
 });
+
 
 // Envio do formulário WiFi
 document.getElementById('wifi-form').addEventListener('submit', function(e) {
@@ -139,7 +116,7 @@ document.getElementById('wifi-form').addEventListener('submit', function(e) {
         dhcp: dhcpCheckbox.checked
     };
     
-    fetch('/connect', {
+    fetch('/connect-wifi', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -219,3 +196,16 @@ document.getElementById('modal-close').addEventListener('click', modalController
 // document.getElementById('modal').addEventListener('click', function(e) {
 //     if (e.target === this) modalController.close();
 // });
+
+ssidSelect.addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const isOpen = selectedOption.dataset.open === 'true';
+    
+    if (isOpen) {
+        // Esconde campo de senha para redes abertas
+        document.getElementById('password-field').style.display = 'none';
+    } else {
+        // Mostra campo de senha para redes protegidas
+        document.getElementById('password-field').style.display = 'block';
+    }
+});

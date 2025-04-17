@@ -133,6 +133,8 @@ white-space: nowrap;
     cursor: pointer;
 }
 
+
+
 nav ul {
     list-style: none;
     padding: 0;
@@ -192,6 +194,37 @@ nav a {
     padding: 2rem;
     border-radius: 8px;
     text-align: center;
+}
+
+.selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 8px;
+}
+
+.refresh-button {
+    background: rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.2); /* borda levemente visível */
+    border-radius: 8px;
+    color: rgb(0, 0, 0);
+    /* border: none; */
+    padding:  8px 4px 4px 6px;
+    cursor: pointer;
+    height: 38px;
+    width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, box-shadow 0.5s;
+    box-shadow: 1px 1px 8px rgba(0,0,0,0.4);
+}
+
+.refresh-button:hover {
+    color: #000;
+    background-color: rgba(0,0,0,0.05);
+    box-shadow: 1px 1px 8px rgba(0,0,0,0.9);
 }
 
 .close-button {
