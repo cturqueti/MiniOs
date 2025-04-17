@@ -44,7 +44,9 @@ window.fetch = async (url, options) => {
     }
 
     if (url === '/save-wifi-config') {
+        console.log(`[mock] Salvando configurações de WiFi: ${JSON.parse(options.body).ip}`);
         return new Response(JSON.stringify({
+
             message: 'Configurações salvas com sucesso!'
         }), {
             status: 200,
@@ -52,6 +54,7 @@ window.fetch = async (url, options) => {
         });
     }
     if (url === '/save-wifi-credentials') {
+        console.log(`[mock] Salvando configurações de WiFi: ${JSON.parse(options.body).ssid}`);
         return new Response(JSON.stringify({
             message: 'Configurações salvas com sucesso!'
         }), {
