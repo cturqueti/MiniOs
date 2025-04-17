@@ -9,7 +9,7 @@
 </head>
 <body>
     <header>
-        <h1>Conexão</h1>
+        <!-- <h1>Conexão</h1> -->
         <div class="menu-toggle">☰</div>
         <nav>
             <ul>
@@ -21,9 +21,11 @@
         </nav>
     </header>
 
-    <section id="block-1" class="card">
-        <h2>Configuração de Rede</h2>
-        <p>O sistema não encontrou configurações de rede válidas, necessário selecionar a rede e o modo de operação.</p>
+    <section id="block-1" class="card grid-center">
+        <div class="card-content">
+            <h2>Configuração de Rede</h2>
+            <p>O sistema não encontrou configurações de rede válidas, necessário selecionar a rede e o modo de operação.</p>
+        </div>
     </section>
 
     <section id="block-2" class="card">
@@ -40,10 +42,12 @@
                 <input type="password" id="password" name="password">
             </div>
             
-            <label>
-                <input type="checkbox" id="dhcp-checkbox" checked>
-                Usar DHCP
-            </label>
+            <div id="dhcp-wrapper" class="hidden checkbox-wrapper">
+                <label class="inline-checkbox ">
+                  <input type="checkbox" id="dhcp-checkbox" checked>
+                  <span>Usar DHCP</span>
+                </label>
+            </div>
             
             <button type="submit" id="connect-btn" class="hidden">Conectar</button>
         </form>
@@ -88,7 +92,7 @@
                 <input type="number" id="sn4" min="0" max="255" value="0" disabled>
             </div>
             
-            <button type="button" id="save-config-btn">Salvar Configuração</button>
+            <button type="button" id="save-wifi-config-btn">Salvar Configuração</button>
         </form>
     </section>
 
@@ -103,131 +107,51 @@
         <p>Desenvolvido para ESP32</p>
     </footer>
 
-    <!-- <div id="modal" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;">
-        <div style="background:white;padding:2rem;border-radius:8px;text-align:center;">
+    <div id="modal" class="hidden">
+        <div class="modal-content">
+            <button id="modal-close" class="close-button">
+                <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                version="1.1"
+                id="svg1"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:svg="http://www.w3.org/2000/svg">
+               <defs
+                  id="defs1" />
+               <g
+                  id="layer1">
+                 <path
+                    style="fill:#000000"
+                    d="M 0,0 16,16"
+                    id="path3" />
+                 <path
+                    style="fill:#000000"
+                    d="M 0,16 16,0"
+                    id="path4" />
+                 <path
+                    style="fill:#000000"
+                    d="M 16,0 0,16 Z"
+                    id="path5" />
+                 <path
+                    style="fill:#000000;stroke:#000000;stroke-width:3;stroke-dasharray:none"
+                    d="M 0.85874464,15.141255 15.141256,0.8587436"
+                    id="path9" />
+                 <path
+                    style="fill:#000000;stroke:#000000;stroke-width:3;stroke-dasharray:none"
+                    d="M 0.85874463,0.85874463 15.141256,15.141256"
+                    id="path10" />
+               </g>
+             </svg>
+            </button>
             <h3 id="modal-title">Aguarde</h3>
             <p id="modal-message">Processando sua solicitação...</p>
-            <button id="modal-close" style="margin-top:1rem;">Fechar</button>
+            <button id="save-wifi-credentials-btn" class="hidden">Salvar</button>
         </div>
-    </div> -->
+    </div>
 
-    <script>
-        // Menu responsivo
-console.log("[teste] olá mundo!");
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            document.querySelector('nav ul').classList.toggle('active');
-        });
 
-        // Controle do formulário WiFi
-        const ssidSelect = document.getElementById('ssid');
-        const passwordField = document.getElementById('password-field');
-        const connectBtn = document.getElementById('connect-btn');
-        const dhcpCheckbox = document.getElementById('dhcp-checkbox');
-        
-        // Ativa/desativa campos IP estático
-        dhcpCheckbox.addEventListener('change', function() {
-            const ipFields = document.querySelectorAll('#static-ip-form input[type="number"]');
-            ipFields.forEach(field => {
-                field.disabled = this.checked;
-            });
-        });
-
-        // Mostra senha quando rede é selecionada
-        ssidSelect.addEventListener('change', function() {
-            if (this.value) {
-                passwordField.classList.remove('hidden');
-                connectBtn.classList.remove('hidden');
-            } else {
-                passwordField.classList.add('hidden');
-                connectBtn.classList.add('hidden');
-            }
-        });
-
-        // Busca redes WiFi disponíveis
-        window.addEventListener('DOMContentLoaded', function() {
-            fetch('/scan')
-                .then(response => response.json())
-                .then(networks => {
-                    networks.forEach(network => {
-                        const option = document.createElement('option');
-                        option.value = network.ssid;
-                        option.textContent = `${network.ssid} (${network.rssi}dBm)`;
-                        ssidSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar redes:', error);
-                    const option = document.createElement('option');
-                    option.textContent = 'Erro ao carregar redes';
-                    ssidSelect.appendChild(option);
-                });
-        });
-
-        // Envio do formulário WiFi
-        document.getElementById('wifi-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            showModal('Conectando...', 'Aguarde enquanto conectamos à rede');
-            
-            const formData = {
-                ssid: ssidSelect.value,
-                password: document.getElementById('password').value,
-                dhcp: dhcpCheckbox.checked
-            };
-            
-            fetch('/connect', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                showModal('Sucesso', data.message || 'Conectado com sucesso!');
-            })
-            .catch(error => {
-                showModal('Erro', 'Falha na conexão: ' + error.message);
-            });
-        });
-
-        // Envio do formulário IP estático
-        document.getElementById('save-config-btn').addEventListener('click', function() {
-            showModal('Salvando...', 'Aguarde enquanto salvamos as configurações');
-            
-            const formData = {
-                mDns: document.getElementById('mDns').value,
-                ip: `${document.getElementById('ip1').value}.${document.getElementById('ip2').value}.${document.getElementById('ip3').value}.${document.getElementById('ip4').value}`,
-                gateway: `${document.getElementById('gw1').value}.${document.getElementById('gw2').value}.${document.getElementById('gw3').value}.${document.getElementById('gw4').value}`,
-                subnet: `${document.getElementById('sn1').value}.${document.getElementById('sn2').value}.${document.getElementById('sn3').value}.${document.getElementById('sn4').value}`
-            };
-            
-            fetch('/save-config', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                showModal('Sucesso', data.message || 'Configuração salva!');
-            })
-            .catch(error => {
-                showModal('Erro', 'Falha ao salvar: ' + error.message);
-            });
-        });
-
-        // Funções auxiliares
-        function showModal(title, message) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            document.getElementById('modal').classList.remove('hidden');
-        }
-        
-        document.getElementById('modal-close').addEventListener('click', function() {
-            document.getElementById('modal').classList.add('hidden');
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
