@@ -28,9 +28,9 @@ void WiFiLib::begin() {
 bool WiFiLib::isCredentials() {
     if (!_wifi.configLoaded)
         return false;
-    if (_wifi.ssid.empty())
+    if (_wifi.ssid.length() == 0)
         return false;
-    if (_wifi.password.empty())
+    if (_wifi.password.length() == 0)
         return false;
     // Pode adicionar outras verificações como tamanho mínimo da senha, etc.
     return true;
@@ -42,13 +42,13 @@ void WiFiLib::connectToWiFi(WiFiItems wifi) {
         LOG_DEBUG("[WIFI] SSID: %s", wifi.ssid.c_str());
     }
     WiFi.mode(WIFI_STA);
-    if (!wifi.dhcpFlag) {
+    if (!wifi.dhcp.equals("true")) {
         WiFi.config(wifi.ip, wifi.gateway, wifi.subnet);
     }
 
     WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) { this->WiFiEvent(event); });
 
-    WiFi.setHostname(wifi.hostname.c_str());
+    WiFi.setHostname(wifi.mDns.c_str());
     WiFi.begin(wifi.ssid.c_str(), wifi.password.c_str());
 
     int attempts = 0;

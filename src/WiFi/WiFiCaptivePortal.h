@@ -17,10 +17,21 @@
 #define CAPTIVE_PORTAL_TASK_STACK_SIZE 4096
 
 class WiFiCaptivePortal {
-  public:
-    // WiFiCaptivePortal(WiFiStorageInterface &storage);
+  private:
+    WebServer _server;
+    Preferences _preferences;
+    DNSServer _dnsServer;
+    TaskHandle_t _serverTaskHandle;
+    WiFiLog _log;
+    WiFiItems _wifiCurrentValues;
+
     static constexpr std::string_view nvs_namespace = "wifi_config";
     static constexpr std::string_view captivePortalFolder = "/CaptivePortal";
+    static constexpr std::string_view configFolder = "/Config";
+
+  public:
+    // WiFiCaptivePortal(WiFiStorageInterface &storage);
+
     WiFiCaptivePortal(WiFiLog log = WiFiLog::ENABLE);
     ~WiFiCaptivePortal();
 
@@ -41,13 +52,14 @@ class WiFiCaptivePortal {
     bool _saveCredentials(WiFiItems wifi);
 
     void _handleRoot();
+    void _logError(const __FlashStringHelper *message, const String &path, ErrorCode code);
+    void _embedFileContent(String &html, const String &filePath, const String &prefix, const String &suffix,
+                           const String &insertBefore);
+
+    void _handleScanWifi();
     void _handleConfig();
 
-    DNSServer _dnsServer;
-    WiFiLog _log;
-    WebServer _server;
     bool _isRunning;
-    TaskHandle_t _serverTaskHandle;
-    Preferences _preferences;
+
     // WiFiStorageInterface &_storage;
 };

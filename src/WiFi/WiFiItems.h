@@ -6,19 +6,26 @@
 #include <vector>
 
 struct WiFiItems {
-    std::string ssid;
-    std::string password;
-    std::string hostname;
-    bool dhcpFlag;
+    String ssid;
+    String password;
+    String dhcp;
     IPAddress ip;
     IPAddress gateway;
     IPAddress subnet;
+    String mDns;
     bool configLoaded;
     int connectionStatus;
     int power;
 
     WiFiItems();
-    void reset();
+    void clear();
+};
+
+struct StaticIPConfig {
+    String ip;
+    String gateway;
+    String subnet;
+    String mDns;
 };
 
 enum class WiFiLog { DISABLE = 0, ENABLE };

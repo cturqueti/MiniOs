@@ -61,10 +61,11 @@ bool WiFiCaptivePortal::isRunning() const { return _isRunning; }
 
 void WiFiCaptivePortal::_startAP() {
     WiFi.softAP(CAPTIVE_PORTAL_SSID);
-    IPAddress apIP(192, 168, 4, 1);
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+    _wifiCurrentValues.ip = IPAddress(192, 168, 4, 1);
+    _wifiCurrentValues.subnet = IPAddress(255, 255, 255, 0);
+    WiFi.softAPConfig(_wifiCurrentValues.ip, _wifiCurrentValues.ip, _wifiCurrentValues.subnet);
     if (_log == WiFiLog::ENABLE) {
-        LOG_INFO("[CAPTIVE PORTAL] AP IP address: %s", WiFi.softAPIP().toString().c_str());
+        LOG_INFO("[CAPTIVE PORTAL] AP IP address: %s", _wifiCurrentValues.ip.toString().c_str());
     }
 }
 
@@ -151,26 +152,27 @@ void WiFiCaptivePortal::_setupServer() {
         }
     });
 
-    _server.on("/scan", HTTP_GET, [this]() {
-        int n = WiFi.scanNetworks();
-        if (n == WIFI_SCAN_FAILED) {
-            _server.send(500, "application/json", "{\"error\":\"Scan failed\"}");
-            return;
-        }
-        JsonDocument doc;
+    _server.on("/scan-wifi", HTTP_GET, [this]() {
+        this->_handleScanWifi();
+        // int n = WiFi.scanNetworks();
+        // if (n == WIFI_SCAN_FAILED) {
+        //     _server.send(500, "application/json", "{\"error\":\"Scan failed\"}");
+        //     return;
+        // }
+        // JsonDocument doc;
 
-        JsonArray networks = doc.to<JsonArray>();
+        // JsonArray networks = doc.to<JsonArray>();
 
-        for (int i = 0; i < n; ++i) {
-            JsonObject network = networks.add<JsonObject>();
-            network["ssid"] = WiFi.SSID(i);
-            network["rssi"] = WiFi.RSSI(i);
-        }
+        // for (int i = 0; i < n; ++i) {
+        //     JsonObject network = networks.add<JsonObject>();
+        //     network["ssid"] = WiFi.SSID(i);
+        //     network["rssi"] = WiFi.RSSI(i);
+        // }
 
-        String json;
-        serializeJson(doc, json);
-        _server.send(200, "application/json", json);
-        WiFi.scanDelete();
+        // String json;
+        // serializeJson(doc, json);
+        // _server.send(200, "application/json", json);
+        // WiFi.scanDelete();
     });
 
     _server.on("/connect", HTTP_POST, [this]() {
@@ -420,7 +422,6 @@ bool WiFiCaptivePortal::_beginCredentials() {
     }
     ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);
     return false;
-    return false;
 }
 
 bool WiFiCaptivePortal::_saveCredentials(WiFiItems wifi) {
@@ -432,47 +433,99 @@ bool WiFiCaptivePortal::_saveCredentials(WiFiItems wifi) {
 }
 
 void WiFiCaptivePortal::_handleRoot() {
-    String indexPath = String(captivePortalFolder.data()) + "/index.html";
-    String cssPath = String(captivePortalFolder.data()) + "/style.css";
-    String jsPath = String(captivePortalFolder.data()) + "/script.js";
-    String iconPath = String(captivePortalFolder.data()) + "/icon.png";
+    // Define os caminhos dos arquivos
+    const String indexPath = String(captivePortalFolder.data()) + "/index.html";
+    const String cssPath = String(captivePortalFolder.data()) + "/style.css";
+    const String jsPath = String(captivePortalFolder.data()) + "/script.js";
+    const String iconPath = String(captivePortalFolder.data()) + "/images/icon.png";
 
+    // Verifica se o arquivo HTML principal existe
     if (!LittleFS.exists(indexPath)) {
-        if (_log == WiFiLog::ENABLE) {
-            LOG_ERROR("[CAPTIVE PORTAL] %s not found", indexPath.c_str());
-        }
-        ERRORS_LIST.addError(ErrorCode::FILE_NOT_FOUND);
-        _server.send(200, "text/html", "<h1>Portal Captivo</h1><p>Página não encontrada</p>");
+        _logError(F("Index file not found"), indexPath, ErrorCode::FILE_NOT_FOUND);
+        _server.send(200, "text/html",
+                     "<!DOCTYPE html><html><head><title>Erro</title></head>"
+                     "<body><h1>Portal Captivo</h1><p>Página não encontrada</p></body></html>");
         return;
     }
 
+    // Carrega o HTML principal
     String html = _loadFromLittleFS(indexPath);
-
-    if (LittleFS.exists(cssPath)) {
-        String css = "<style>" + _loadFromLittleFS(cssPath) + "</style>";
-        html.replace("</head>", css + "</head>");
-    } else {
-        if (_log == WiFiLog::ENABLE) {
-            LOG_ERROR("[CAPTIVE PORTAL] %s not found", cssPath.c_str());
-        }
-        ERRORS_LIST.addError(ErrorCode::FILE_NOT_FOUND);
+    if (html.isEmpty()) {
+        _logError(F("Failed to load index file"), indexPath, ErrorCode::FILE_READ_ERROR);
+        _server.send(500, "text/plain", "Erro ao carregar a página");
+        return;
     }
 
-    if (LittleFS.exists(jsPath)) {
-        String js = "<script>" + _loadFromLittleFS(jsPath) + "</script>";
-        html.replace("</body>", js + "</body>");
-    } else {
-        if (_log == WiFiLog::ENABLE) {
-            LOG_ERROR("[CAPTIVE PORTAL] %s not found", jsPath);
-        }
-        ERRORS_LIST.addError(ErrorCode::FILE_NOT_FOUND);
-    }
+    // Processa CSS incorporado
+    _embedFileContent(html, cssPath, "<style>", "</style>", "</head>");
 
-    if (_log == WiFiLog::ENABLE) {
-        // LOG_DEBUG("[CAPTIVE PORTAL] HTML: %s", html.c_str());
-    }
+    // Processa JavaScript incorporado
+    _embedFileContent(html, jsPath, "<script>", "</script>", "</body>");
 
+    // Envia a resposta
     _server.send(200, "text/html", html);
+}
+
+// Função auxiliar para registrar erros
+void WiFiCaptivePortal::_logError(const __FlashStringHelper *message, const String &path, ErrorCode code) {
+    if (_log == WiFiLog::ENABLE) {
+        LOG_ERROR("[CAPTIVE PORTAL] %s: %s", message, path.c_str());
+    }
+    ERRORS_LIST.addError(code);
+}
+
+// Função auxiliar para incorporar arquivos
+void WiFiCaptivePortal::_embedFileContent(String &html, const String &filePath, const String &prefix,
+                                          const String &suffix, const String &insertBefore) {
+    if (LittleFS.exists(filePath)) {
+        String content = _loadFromLittleFS(filePath);
+        if (!content.isEmpty()) {
+            html.replace(insertBefore, prefix + content + suffix + insertBefore);
+        } else {
+            _logError(F("Failed to load file"), filePath, ErrorCode::FILE_READ_ERROR);
+        }
+    } else {
+        _logError(F("File not found"), filePath, ErrorCode::FILE_NOT_FOUND);
+    }
+}
+
+void WiFiCaptivePortal::_handleScanWifi() {
+    if (_log == WiFiLog::ENABLE) {
+        LOG_DEBUG("[CAPTIVE PORTAL] Handling WiFi scan request");
+    }
+
+    // Realiza o scan das redes WiFi
+    int numNetworks = WiFi.scanNetworks(false, true); // scanNetworks(async, showHidden)
+
+    // Cria o documento JSON
+    DynamicJsonDocument doc(2048); // Tamanho ajustado conforme necessidade
+    JsonArray networks = doc.to<JsonArray>();
+
+    for (int i = 0; i < numNetworks; ++i) {
+        JsonObject network = networks.createNestedObject();
+
+        network["ssid"] = WiFi.SSID(i);
+        network["rssi"] = WiFi.RSSI(i);
+        network["channel"] = WiFi.channel(i);
+        network["open"] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
+
+        // Adiciona ícone baseado na segurança (opcional)
+        network["icon"] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "🔓" : "🔒";
+
+        if (_log == WiFiLog::ENABLE) {
+            LOG_DEBUG("[CAPTIVE PORTAL] Found network: %s (%ddBm)", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
+        }
+    }
+
+    // Serializa o JSON para string
+    String response;
+    serializeJson(doc, response);
+
+    // Envia a resposta
+    _server.send(200, "application/json", response);
+
+    // Limpa os resultados do scan
+    WiFi.scanDelete();
 }
 
 void WiFiCaptivePortal::_handleConfig() {
