@@ -30,14 +30,17 @@ window.fetch = async (url, options) => {
             headers: { 'Content-Type': 'application/json' }
         });
     }
-
+    
     if (url === '/wifi-settings') {
+        // Alterna entre true e false para simular diferentes estados
+        const dhcpState = Math.random() > 0.5;
+        
         return new Response(JSON.stringify({
+            dhcp: dhcpState,
             mDns: "modulo1",
-            ip: "192.168.0.193",
-            gateway: "192.168.0.1",
-            subnet: "255.255.255.0",
-            dhcp: false  // Adicionei este campo para controle do checkbox
+            ip: dhcpState ? "" : "192.168.0.193", // IP vazio se DHCP estiver ativo
+            gateway: dhcpState ? "" : "192.168.0.1",
+            subnet: dhcpState ? "" : "255.255.255.0"
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -69,7 +72,7 @@ window.fetch = async (url, options) => {
         console.log(`[mock] IP: ${JSON.parse(options.body).ip}`);
         console.log(`[mock] Subnet: ${JSON.parse(options.body).subnet}`);
         console.log(`[mock] Gateway: ${JSON.parse(options.body).gateway}`);
-        
+
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         return new Response(JSON.stringify({

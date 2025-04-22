@@ -364,22 +364,66 @@ String WiFiCaptivePortal::_getContentType(const String &filename) {
 }
 
 bool WiFiCaptivePortal::_beginCredentials() {
-    if (_preferences.begin(nvs_namespace.data(), false)) {
-        return true;
+    if (!_preferences.begin(nvs_namespace.data(), false)) { // Use c_str() para String
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[WiFi] Error on load NVS");
+        }
+        ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);
+        return false;
     }
-    if (_log == WiFiLog::ENABLE) {
-        LOG_ERROR("[WiFi] Error on load NVS");
-    }
-    ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);
-    return false;
+    return true;
 }
 
 bool WiFiCaptivePortal::_saveCredentials(WiFiItems wifi) {
+    if (!_beginCredentials()) {
+        return false;
+    }
+
     bool success = true;
-    success &= _preferences.putString("ssid", wifi.ssid.c_str());
-    success &= _preferences.putString("password", wifi.password.c_str());
+
+    // Verifique cada operação individualmente
+    if (!_preferences.putString("ssid", wifi.ssid.c_str())) {
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[WiFi] Failed to save SSID");
+        }
+        success = false;
+    }
+
+    if (!_preferences.putString("password", wifi.password.c_str())) {
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[WiFi] Failed to save password");
+        }
+        success = false;
+    }
+
+    if (!_preferences.putBool("dhcpFlag", wifi.dhcp)) {
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[WiFi] Failed to save DHCP flag");
+        }
+        success = false;
+    }
+
     _preferences.end();
-    return true;
+
+    if (!success) {
+        ERRORS_LIST.addError(ErrorCode::NVS_SAVE_ERROR);
+    }
+
+    return success;
+}
+
+bool WiFiCaptivePortal::_loadCredentials(WiFiItems &wifi) {
+    if (!_beginCredentials()) {
+        return false;
+    }
+
+    wifi.ssid = _preferences.getString("ssid", "");
+    wifi.password = _preferences.getString("password", "");
+    wifi.dhcp = _preferences.getBool("dhcpFlag", true);
+
+    _preferences.end();
+
+    return !wifi.ssid.isEmpty(); // Consideramos válido se pelo menos o SSID existe
 }
 
 void WiFiCaptivePortal::_handleRoot() {
@@ -569,7 +613,7 @@ void WiFiCaptivePortal::_handleSaveWiFiSettings() {
                                                                      "\n IP: " + WiFi.localIP().toString()
                                                                : "Falha na conexão";
 
-        // _saveCredentials(config);
+        _saveCredentials(config);
 
         // Salvar no config-ip.json
         String configPath = String(configFolder.data()) + "/configWiFi.json";
@@ -583,6 +627,7 @@ void WiFiCaptivePortal::_handleSaveWiFiSettings() {
             return;
         }
 
+        docFile["dhcp"] = config.dhcp;
         docFile["mDns"] = config.mDns;
 
         if (!config.dhcp) {

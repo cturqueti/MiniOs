@@ -43,13 +43,13 @@ class WiFiLib {
     void WiFiEvent(WiFiEvent_t event);
     void startAP();
     bool _beginCredentials();
-    bool _loadCredentials();
+    bool _loadCredentials(WiFiItems &wifi);
 
     static const char *TAG;
     WiFiItems _wifi;
     WiFiLog _log;
     // WiFiCredentialsNVS nvs;
-    WiFiItems _wifiConfig;
+    // WiFiItems _wifiConfig;
     WiFiCaptivePortal _captivePortal;
     mutable Preferences _preferences;
 };

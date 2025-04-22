@@ -15,6 +15,7 @@ enum ErrorCode {
     CREDENTIALS_SAVE_ERROR,
     FILE_NOT_CREATED,
     MDNS_ERROR,
+    NVS_SAVE_ERROR,
 
     WARNING,
     INFO,

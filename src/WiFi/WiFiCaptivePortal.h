@@ -51,6 +51,7 @@ class WiFiCaptivePortal {
 
     bool _beginCredentials();
     bool _saveCredentials(WiFiItems wifi);
+    bool _loadCredentials(WiFiItems &wifi);
 
     void _handleRoot();
     void _logError(const __FlashStringHelper *message, const String &path, ErrorCode code);

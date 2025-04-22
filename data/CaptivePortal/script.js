@@ -177,8 +177,11 @@ async function loadWiFiSettings() {
         }
         
         const settings = await response.json();
+        console.log(settings);
         
         // Preencher o campo mDNS
+        document.getElementById('dhcp-checkbox').checked = settings.dhcp || false;
+
         document.getElementById('mDns').value = settings.mDns || '';
         
         // Função auxiliar para dividir endereços IP
@@ -189,6 +192,12 @@ async function loadWiFiSettings() {
                 if (field) field.value = parts[i] || '0';
             }
         };
+
+        if (!settings.dhcp) {
+            staticIpForm.ipFields.forEach(field => {
+                field.disabled = this.checked;
+            });
+        }
         
         // Preencher campos de IP
         fillIpFields(settings.ip || '192.168.1.100', 'ip');

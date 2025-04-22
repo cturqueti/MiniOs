@@ -2,11 +2,13 @@
 
 WiFiLib::WiFiLib(WiFiLog log) {
     _log = log;
-    _beginCredentials();
+    _wifi.configLoaded = _loadCredentials(_wifi);
+    _wifi.configLoaded = false; // Descomente essa linha para habilitar a captivade
 }
 WiFiLib::~WiFiLib() {}
 
 void WiFiLib::begin() {
+
     if (_wifi.configLoaded) {
         if (isSsid()) {
             // Start Wifi
@@ -123,32 +125,34 @@ void WiFiLib::startAP() {
     // _captivePortal.begin();
 }
 
-bool WiFiLib::_beginCredentials() {
-    if (_preferences.begin(nvs_namespace.data(), true)) {
-        return true;
+bool WiFiCaptivePortal::_beginCredentials() {
+    if (!_preferences.begin(nvs_namespace.data(), false)) { // Use c_str() para String
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[WiFi] Error on load NVS");
+        }
+        ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);
+        return false;
     }
-    if (_log == WiFiLog::ENABLE) {
-        LOG_ERROR("[WiFi] Error on load NVS");
-    }
-    ERRORS_LIST.addError(ErrorCode::NVS_BEGIN_ERROR);
-    return false;
+    return true;
 }
 
-bool WiFiLib::_loadCredentials() {
-    _beginCredentials();
-    _wifiConfig.ssid = _preferences.getString("ssid", "").c_str();
-    _wifiConfig.password = _preferences.getString("password", "").c_str();
-    _preferences.end();
-    if (_wifiConfig.ssid != "") {
-        if (_log == WiFiLog::ENABLE) {
-            LOG_INFO("[WiFi] Loaded SSID: %s", _wifiConfig.ssid);
+bool WiFiLib::_loadCredentials(WiFiItems &wifi) {
+    if (_beginCredentials()) {
+        wifi.ssid = _preferences.getString("ssid", "").c_str();
+        wifi.password = _preferences.getString("password", "").c_str();
+        _preferences.end();
+        if (wifi.ssid != "") {
+            if (_log == WiFiLog::ENABLE) {
+                LOG_INFO("[WiFi] Loaded SSID: %s", wifi.ssid);
+                LOG_DEBUG("[WiFi] Loaded Password: %s", wifi.password);
+            }
+            return true;
         }
-        return true;
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[WiFi] Don't have SSID");
+        }
+        ERRORS_LIST.addError(ErrorCode::SSID_NOT_FOUND);
     }
-    if (_log == WiFiLog::ENABLE) {
-        LOG_ERROR("[WiFi] Don't have SSID");
-    }
-    ERRORS_LIST.addError(ErrorCode::SSID_NOT_FOUND);
 
     return false;
 }
