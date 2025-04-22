@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuração de Rede</title>
-    <!-- <link rel="stylesheet" href="index.css" media="screen"> -->
+    <!-- <link rel="stylesheet" href="style.css" media="screen"> -->
 
 </head>
 <body>
@@ -38,33 +38,43 @@
                   <!-- As redes serão preenchidas via JavaScript -->
                 </select>
                 <button id="refresh-wifi" type="button" title="Atualizar redes" class="refresh-button">
-                  <svg viewBox="0 0 150 151" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fill="currentColor"
-                      d="m 111.9,61.57 a 5.36,5.36 0 0 1 10.71,0 61.3,61.3 0 0 1 -105.07,42.91 v 12.35 a 5.36,5.36 0 0 1 -10.72,0 V 89.31 A 5.36,5.36 0 0 1 12.18,84 H 40 a 5.36,5.36 0 1 1 0,10.71 H 23 a 50.6,50.6 0 0 0 88.87,-33.1 z M 106.6,5.36 a 5.36,5.36 0 1 1 10.71,0 V 33.14 A 5.36,5.36 0 0 1 112,38.49 H 84.44 a 5.36,5.36 0 1 1 0,-10.71 H 99 A 50.6,50.6 0 0 0 10.71,61.57 5.36,5.36 0 1 1 0,61.57 61.31,61.31 0 0 1 91.07,8 61.83,61.83 0 0 1 106.6,20.27 Z" />
-                  </svg>
+                    <svg
+                    id="Layer_1"
+                    data-name="Layer 1"
+                    viewBox="0 0 120 120"
+                    version="1.1"
+                    width="24"
+                    height="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:svg="http://www.w3.org/2000/svg">
+                   <defs
+                      id="defs1" />
+                   <title
+                      id="title1">update</title>
+                   <path
+                      d="m 111.9,61.57 a 5.36,5.36 0 0 1 10.71,0 61.3,61.3 0 0 1 -105.07,42.91 v 12.35 a 5.36,5.36 0 0 1 -10.72,0 V 89.31 A 5.36,5.36 0 0 1 12.18,84 H 40 a 5.36,5.36 0 1 1 0,10.71 H 23 a 50.6,50.6 0 0 0 88.87,-33.1 z M 106.6,5.36 a 5.36,5.36 0 1 1 10.71,0 V 33.14 A 5.36,5.36 0 0 1 112,38.49 H 84.44 a 5.36,5.36 0 1 1 0,-10.71 H 99 A 50.6,50.6 0 0 0 10.71,61.57 5.36,5.36 0 1 1 0,61.57 61.31,61.31 0 0 1 91.07,8 61.83,61.83 0 0 1 106.6,20.27 Z"
+                      id="path1" />
+                 </svg>
                 </button>
             </div>
             <div id="password-field" class="hidden">
                 <label for="password">Senha:</label>
                 <input type="password" id="password" name="password">
             </div>
-            
-            <div id="dhcp-wrapper" class="hidden checkbox-wrapper">
-                <label class="inline-checkbox ">
-                  <input type="checkbox" id="dhcp-checkbox" checked>
-                  <span>Usar DHCP</span>
-                </label>
-            </div>
-            
-            <button type="submit" id="connect-btn" class="hidden">Conectar</button>
+
         </form>
     </section>
 
     <section id="block-3" class="card">
         <h2>Configuração de rede</h2>
         <form id="static-ip-form">
-            <label for="mDns">Nome de Rede:</label>
+
+            <label class="inline-checkbox ">
+                <input type="checkbox" id="dhcp-checkbox" checked>
+                <span>Usar DHCP</span>
+            </label>
+            <p> </p>
+            <label for="mDns">Nome do Dispositivo:</label>
             <input type="text" id="mDns" name="mDns" placeholder="Ex: meuesp32">
             
             <label>Endereço IP:</label>

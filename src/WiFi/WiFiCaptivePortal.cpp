@@ -175,85 +175,7 @@ void WiFiCaptivePortal::_setupServer() {
         // WiFi.scanDelete();
     });
 
-    _server.on("/connect", HTTP_POST, [this]() {
-        if (_log == WiFiLog::ENABLE) {
-            LOG_INFO("[CAPTIVE PORTAL] Received connect request");
-        }
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, _server.arg("plain"));
-        if (error) {
-            _server.send(400, "application/json", "{\"success\":false,\"message\":\"JSON inválido\"}");
-            if (_log == WiFiLog::ENABLE) {
-                LOG_ERROR("[CAPTIVE PORTAL] JSON inválido: %s", error.c_str());
-            }
-            return;
-        }
-        WiFiItems config;
-        // Obter dados básicos
-        String ssid = doc["ssid"].as<String>();
-        String password = doc["password"].as<String>();
-        String hostname = doc["hostname"].as<String>();
-        String ipMode = doc["ipMode"].as<String>();
-
-        // Configuração de IP
-        if (ipMode == "static") {
-            IPAddress static_ip, gateway, subnet;
-
-            if (!static_ip.fromString(doc["staticIp"].as<String>()) ||
-                !gateway.fromString(doc["gateway"].as<String>()) || !subnet.fromString(doc["subnet"].as<String>())) {
-                _server.send(400, "application/json", "{\"success\":false,\"message\":\"Endereço IP inválido\"}");
-                return;
-            }
-
-            WiFi.config(static_ip, gateway, subnet);
-        } else {
-            WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-        }
-
-        // Configurar hostname
-        WiFi.setHostname(hostname.c_str());
-
-        // Conectar à rede
-        WiFi.begin(ssid.c_str(), password.c_str());
-
-        // Aguardar conexão (com timeout)
-        int attempts = 0;
-        while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-            delay(500);
-            attempts++;
-        }
-
-        if (WiFi.status() == WL_CONNECTED) {
-            // if (_saveCredentials(config)) {
-            //     _server.send(200, "application/json",
-            //                  "{\"status\":\"success\",\"message\":\"Credenciais salvas com sucesso\"}");
-            // } else {
-            //     _server.send(500, "application/json",
-            //                  "{\"status\":\"error\",\"message\":\"Falha ao salvar credenciais\"}");
-            //     ERRORS_LIST.addError(ErrorCode::CREDENTIALS_SAVE_ERROR);
-            // }
-            if (_log == WiFiLog::ENABLE) {
-                LOG_INFO("[CAPTIVE PORTAL] Connected to WiFi");
-            }
-            // _server.sendHeader("Location", "/success");
-            // _server.send(302, "text/plain", "Redirecting to success page");
-            // Preparar resposta
-            JsonDocument responseDoc;
-            responseDoc["success"] = WiFi.status() == WL_CONNECTED;
-            responseDoc["message"] = WiFi.status() == WL_CONNECTED ? "Conectado com sucesso" : "Falha na conexão";
-            responseDoc["ip"] = WiFi.localIP().toString();
-
-            _saveCredentials(config);
-
-            String response;
-            serializeJson(responseDoc, response);
-            _server.send(200, "application/json", response);
-        }
-
-        // Opcional: encerrar o portal após conexão
-        delay(1000);
-        end();
-    });
+    _server.on("/save-wifi-settings", HTTP_POST, [this]() { this->_handleSaveWiFiSettings(); });
 
     _server.on("/success", HTTP_GET, [this]() {
         if (_log == WiFiLog::ENABLE) {
@@ -261,6 +183,34 @@ void WiFiCaptivePortal::_setupServer() {
         }
         _server.sendHeader("Location", "/config.html");
         _server.send(302, "text/plain", "Redirecting to config");
+    });
+
+    _server.on("/wifi-settings", HTTP_GET, [this]() {
+        if (_log == WiFiLog::ENABLE) {
+            LOG_INFO("[CAPTIVE PORTAL] Received wifi-settings request");
+        }
+
+        String path = String(configFolder.data()) + "/configWiFi.json";
+
+        // Verifica se o arquivo HTML principal existe
+        if (!LittleFS.exists(path)) {
+            _logError(F("Index file not found"), path, ErrorCode::FILE_NOT_FOUND);
+            _server.send(200, "text/html",
+                         "<!DOCTYPE html><html><head><title>Erro</title></head>"
+                         "<body><h1>Configuracao</h1><p>Página não encontrada</p></body></html>");
+            return;
+        }
+        String json = _loadFromLittleFS(path);
+        if (json.isEmpty()) {
+            if (_log == WiFiLog::ENABLE) {
+                LOG_ERROR("[CAPTIVE PORTAL] Failed to open file: %s", path.c_str());
+            }
+            _server.send(404, "text/plain", "File not found");
+            return;
+        }
+
+        // Enviar o arquivo diretamente
+        _server.send(200, "application/json", json);
     });
 
     _server.on("/network-settings", HTTP_GET, [this]() {
@@ -498,11 +448,11 @@ void WiFiCaptivePortal::_handleScanWifi() {
     int numNetworks = WiFi.scanNetworks(false, true); // scanNetworks(async, showHidden)
 
     // Cria o documento JSON
-    DynamicJsonDocument doc(2048); // Tamanho ajustado conforme necessidade
+    JsonDocument doc; // Tamanho ajustado conforme necessidade
     JsonArray networks = doc.to<JsonArray>();
 
     for (int i = 0; i < numNetworks; ++i) {
-        JsonObject network = networks.createNestedObject();
+        JsonObject network = networks.add<JsonObject>();
 
         network["ssid"] = WiFi.SSID(i);
         network["rssi"] = WiFi.RSSI(i);
@@ -545,4 +495,151 @@ void WiFiCaptivePortal::_handleConfig() {
     String html = _loadFromLittleFS(configPath);
     _server.send(200, "text/html", html);
     return;
+}
+
+void WiFiCaptivePortal::_handleSaveWiFiSettings() {
+    if (_log == WiFiLog::ENABLE) {
+        LOG_INFO("[CAPTIVE PORTAL] Received connect request");
+    }
+    JsonDocument doc, docFile;
+    DeserializationError error = deserializeJson(doc, _server.arg("plain"));
+    if (error) {
+        _server.send(400, "application/json", "{\"success\":false,\"message\":\"JSON inválido\"}");
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[CAPTIVE PORTAL] JSON inválido: %s", error.c_str());
+        }
+        return;
+    }
+    WiFiItems config;
+    // 1. Obter dados básicos
+    config.ssid = doc["ssid"].as<String>();
+    config.password = doc["password"].as<String>();
+    config.dhcp = doc["dhcp"].as<bool>();
+    config.mDns = doc["mDns"].as<String>();
+    if (!config.dhcp) {
+        if (!config.ip.fromString(doc["ip"].as<String>())) {
+            LOG_ERROR("[CAPTIVE PORTAL] IP estático inválido");
+            return;
+        }
+
+        if (!config.gateway.fromString(doc["gateway"].as<String>())) {
+            LOG_ERROR("[CAPTIVE PORTAL] Gateway inválido");
+            return;
+        }
+
+        if (!config.subnet.fromString(doc["subnet"].as<String>())) {
+            LOG_ERROR("[CAPTIVE PORTAL] Máscara de sub-rede inválida");
+            return;
+        }
+    }
+
+    if (_log == WiFiLog::ENABLE) {
+        LOG_DEBUG("[CAPTIVE PORTAL] SSID: %s", config.ssid.c_str());
+        LOG_DEBUG("[CAPTIVE PORTAL] Password: %s", config.password.c_str());
+        LOG_DEBUG("[CAPTIVE PORTAL] DHCP Mode: %d", config.dhcp);
+        LOG_DEBUG("[CAPTIVE PORTAL] mDns: %s", config.mDns.c_str());
+        if (!config.dhcp) {
+            LOG_DEBUG("[CAPTIVE PORTAL] IP: %s", config.ip.toString().c_str());
+            LOG_DEBUG("[CAPTIVE PORTAL] Gateway: %s", config.gateway.toString().c_str());
+            LOG_DEBUG("[CAPTIVE PORTAL] Subnet: %s", config.subnet.toString().c_str());
+        }
+    }
+
+    // 2. Conectar à rede
+    WiFi.begin(config.ssid.c_str(), config.password.c_str());
+
+    // Aguardar conexão (com timeout)
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+        delay(500);
+        attempts++;
+    }
+
+    // 3. Verificar se a conexão foi bem sucedida
+
+    if (WiFi.status() == WL_CONNECTED) {
+        // Executar ação após conexão bem sucedida
+
+        if (_log == WiFiLog::ENABLE) {
+            LOG_INFO("[CAPTIVE PORTAL] Connected to WiFi. IP: %s", WiFi.localIP().toString().c_str());
+        }
+
+        JsonDocument responseDoc;
+        responseDoc["message"] = WiFi.status() == WL_CONNECTED ? "Conectado com sucesso a rede " + config.ssid +
+                                                                     "\n IP: " + WiFi.localIP().toString()
+                                                               : "Falha na conexão";
+
+        // _saveCredentials(config);
+
+        // Salvar no config-ip.json
+        String configPath = String(configFolder.data()) + "/configWiFi.json";
+        File configFile = LittleFS.open(configPath, "w");
+        if (!configFile) {
+            if (_log == WiFiLog::ENABLE) {
+                LOG_ERROR("[CAPTIVE PORTAL] Failed to open file %s for writing", configPath.c_str());
+            }
+            ERRORS_LIST.addError(ErrorCode::FILE_NOT_CREATED);
+            _server.send(404, "text/plain", "Config page not found");
+            return;
+        }
+
+        docFile["mDns"] = config.mDns;
+
+        if (!config.dhcp) {
+            docFile["ip"] = config.ip.toString();
+            docFile["gateway"] = config.gateway.toString();
+            docFile["subnet"] = config.subnet.toString();
+
+            WiFi.config(config.ip, config.gateway, config.subnet);
+        } else {
+            docFile["ip"] = WiFi.localIP().toString();
+            docFile["gateway"] = WiFi.gatewayIP().toString();
+            docFile["subnet"] = WiFi.subnetMask().toString();
+
+            WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        }
+
+        if (serializeJson(docFile, configFile) == 0) {
+            if (_log == WiFiLog::ENABLE) {
+                LOG_ERROR("[CAPTIVE PORTAL] Failed to write to file");
+            }
+            ERRORS_LIST.addError(ErrorCode::FILE_NOT_CREATED);
+            _server.send(404, "text/plain", "Config page not found");
+            return;
+        }
+
+        configFile.close();
+
+        String response;
+        serializeJson(responseDoc, response);
+        _server.send(200, "application/json", response);
+    } else {
+        // Caso a conexão falhe
+        JsonDocument responseDoc;
+        responseDoc["message"] = "Falha na conexão";
+
+        String response;
+        serializeJson(responseDoc, response);
+        _server.send(200, "application/json", response);
+    }
+
+    // Configuração de IP
+
+    // Configurar hostname
+    // WiFi.setHostname(hostname.c_str());
+
+    // Opcional: encerrar o portal após conexão
+    if (!MDNS.begin(config.mDns)) { // "esp32" será o nome do seu dispositivo
+        if (_log == WiFiLog::ENABLE) {
+            LOG_ERROR("[CAPTIVE PORTAL] Erro ao iniciar mDNS");
+        }
+        ERRORS_LIST.addError(ErrorCode::MDNS_ERROR);
+    }
+    if (_log == WiFiLog::ENABLE) {
+        LOG_INFO("[CAPTIVE PORTAL] mDNS iniciado");
+    }
+
+    // Adicione serviços (opcional)
+    MDNS.addService("http", "tcp", 80); // Serviço web na porta 80
+    end();
 }

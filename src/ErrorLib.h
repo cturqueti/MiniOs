@@ -13,6 +13,8 @@ enum ErrorCode {
     FILE_NOT_FOUND,
     FILE_READ_ERROR,
     CREDENTIALS_SAVE_ERROR,
+    FILE_NOT_CREATED,
+    MDNS_ERROR,
 
     WARNING,
     INFO,

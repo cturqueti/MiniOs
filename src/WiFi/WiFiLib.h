@@ -12,6 +12,7 @@
 #include <vector>
 
 // #include "Utils.h"
+#include <ESPmDNS.h>
 #include <WiFi.h>
 // #include "WiFiAP.h"
 
@@ -30,7 +31,7 @@ class WiFiLib {
     bool isCredentials();
 
     inline bool isConfigLoaded() { return _wifi.configLoaded; }
-    inline bool isDhcp() { return _wifi.dhcp == "true"; }
+    inline bool isDhcp() { return _wifi.dhcp; }
     inline bool isSsid() { return _wifi.ssid.length() > 0; }
 
   private:

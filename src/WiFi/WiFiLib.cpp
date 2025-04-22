@@ -42,7 +42,7 @@ void WiFiLib::connectToWiFi(WiFiItems wifi) {
         LOG_DEBUG("[WIFI] SSID: %s", wifi.ssid.c_str());
     }
     WiFi.mode(WIFI_STA);
-    if (!wifi.dhcp.equals("true")) {
+    if (!wifi.dhcp) {
         WiFi.config(wifi.ip, wifi.gateway, wifi.subnet);
     }
 

@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 #include <ArduinoJson.h>
 #include <DNSServer.h>
+#include <ESPmDNS.h>
 #include <LittleFS.h>
 #include <LogLibrary.h>
 #include <Preferences.h>
@@ -58,6 +59,7 @@ class WiFiCaptivePortal {
 
     void _handleScanWifi();
     void _handleConfig();
+    void _handleSaveWiFiSettings();
 
     bool _isRunning;
 

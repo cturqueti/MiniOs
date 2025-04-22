@@ -13,15 +13,12 @@ const wifiForm = {
     ssidSelect: document.getElementById('ssid'),
     passwordField: document.getElementById('password-field'),
     passwordInput: document.getElementById('password'),
-    connectBtn: document.getElementById('connect-btn'),
-    dhcpCheckbox: document.getElementById('dhcp-checkbox'),
-    saveBtn: document.getElementById('save-wifi-credentials-btn'),
-    dhcpWrapper: document.getElementById('dhcp-wrapper'),
-    refreshBtn: document.getElementById('refresh-wifi')
+    refreshBtn: document.getElementById('refresh-wifi'),
 };
 
 const staticIpForm = {
-    mDnsInput: document.getElementById('mDns'),
+    dhcpCheckbox: document.getElementById('dhcp-checkbox'),
+    mDnsInput:  document.getElementById('mDns'),
     ipFields: document.querySelectorAll('.ip-group input[type="number"]'),
     saveConfigBtn: document.getElementById('save-wifi-config-btn')
 };
@@ -38,6 +35,53 @@ function showModal(title, message) {
 
 function closeModal() {
     modal.element.classList.remove('active');
+}
+
+// Estados de carregamento
+// Função setLoading atualizada para trabalhar com seu botão específico
+function setLoading(state) {
+    const buttons = [staticIpForm.saveConfigBtn, wifiForm.refreshBtn];
+    
+    buttons.forEach(btn => {
+        if (!btn) return;
+
+        if (btn.id === 'refresh-wifi') {
+            // Comportamento para o botão de refresh (rotação SVG)
+            if (state) {
+                btn.disabled = true;
+                btn.classList.add('loading');
+                const svg = btn.querySelector('svg');
+                if (svg) svg.style.transform = 'rotate(360deg)';
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                const svg = btn.querySelector('svg');
+                if (svg) svg.style.transform = 'rotate(0deg)';
+            }
+        } 
+    });
+}
+
+// Validação de rede
+function validateNetworkSelection(ssid, isOpenNetwork, password) {
+    if (!ssid) {
+        showModal('Erro', 'Selecione uma rede Wi-Fi');
+        return false;
+    }
+    if (!isOpenNetwork && !password) {
+        showModal('Erro', 'Digite a senha da rede Wi-Fi');
+        return false;
+    }
+    return true;
+}
+
+// Validação de mDNS
+function validateMDns(mDns) {
+    if (!mDns || !/^[a-zA-Z0-9]+$/.test(mDns)) {
+        showModal('Erro', 'Nome do dispositivo inválido! Deve conter apenas letras e números.');
+        return false;
+    }
+    return true;
 }
 
 // Validação de IP
@@ -90,10 +134,14 @@ function areInSameNetwork(ip, gateway, subnet) {
 // =============================================
 // Função para buscar redes WiFi
 async function scanWifi() {
+    
     wifiForm.ssidSelect.innerHTML = '<option value="">Selecione uma rede...</option>';
 
     try {
+        setLoading(true);
         const response = await fetch('/scan-wifi');
+        if (!response.ok) throw new Error(`Erro HTTP! status: ${response.status}`);
+
         const networks = await response.json();
 
         networks.forEach(network => {
@@ -111,129 +159,113 @@ async function scanWifi() {
         const option = document.createElement('option');
         option.textContent = '❌ Erro ao carregar redes';
         wifiForm.ssidSelect.appendChild(option);
+    } finally {
+        setLoading(false);
     }
 }
 
-// Função para conectar ao WiFi
-async function connectToWifi(e) {
-    e.preventDefault();
-    
-    const ssid = wifiForm.ssidSelect.value;
-    const password = wifiForm.passwordInput.value;
-    const dhcp = wifiForm.dhcpCheckbox.checked;
-    const isOpenNetwork = wifiForm.ssidSelect.options[wifiForm.ssidSelect.selectedIndex]?.dataset.open === 'true';
-
-    if (!ssid) {
-        showModal('Erro', 'Selecione uma rede Wi-Fi');
-        return;
-    }
-
-    if (!isOpenNetwork && !password) {
-        showModal('Erro', 'Digite a senha da rede Wi-Fi');
-        return;
-    }
-
-    showModal('Conectando', `Conectando à rede ${ssid}...`);
-
+async function loadWiFiSettings() {
     try {
-        const response = await fetch('/connect-wifi', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ssid, password, dhcp })
-        });
-
-        if (!response.ok) throw new Error('Erro no servidor');
+        // Mostrar estado de carregamento
+        setLoading(true);
         
-        const data = await response.json();
-        showModal('Sucesso', data.message || 'Conectado com sucesso!');
-        modal.saveBtn.classList.remove('hidden');
+        // Fazer requisição para obter as configurações
+        const response = await fetch('/wifi-settings');
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP! status: ${response.status}`);
+        }
+        
+        const settings = await response.json();
+        
+        // Preencher o campo mDNS
+        document.getElementById('mDns').value = settings.mDns || '';
+        
+        // Função auxiliar para dividir endereços IP
+        const fillIpFields = (ipString, prefix) => {
+            const parts = ipString.split('.');
+            for (let i = 0; i < 4; i++) {
+                const field = document.getElementById(`${prefix}${i+1}`);
+                if (field) field.value = parts[i] || '0';
+            }
+        };
+        
+        // Preencher campos de IP
+        fillIpFields(settings.ip || '192.168.1.100', 'ip');
+        fillIpFields(settings.gateway || '192.168.1.1', 'gw');
+        fillIpFields(settings.subnet || '255.255.255.0', 'sn');
+        
+        // Habilitar/desabilitar campos baseado no DHCP
+        // const dhcpEnabled = settings.dhcp || false; // Assumindo que a API pode retornar isso
+        // document.getElementById('dhcp-checkbox').checked = dhcpEnabled;
+        
+        // const ipFields = document.querySelectorAll('.ip-group input[type="number"]');
+        // ipFields.forEach(field => {
+        //     field.disabled = dhcpEnabled;
+        // });
+        
     } catch (error) {
-        showModal('Erro', 'Falha na conexão: ' + error.message);
+        console.error('Erro ao carregar configurações WiFi:', error);
+        showModal('Erro', 'Não foi possível carregar as configurações WiFi. Tente novamente.');
+    } finally {
+        setLoading(false);
     }
 }
 
-// Função para salvar credenciais WiFi
-async function saveWifiCredentials(e) {
+async function saveStaticIpConfig(e) {
     e.preventDefault();
-    
+    setLoading(true);
+
     const ssid = wifiForm.ssidSelect.value;
     const password = wifiForm.passwordInput.value;
-    const dhcp = wifiForm.dhcpCheckbox.checked;
+    const dhcp = staticIpForm.dhcpCheckbox.checked;
+    const mDns = staticIpForm.mDnsInput.value;
+    const ip = Array.from(staticIpForm.ipFields).map(field => field.value);
     const isOpenNetwork = wifiForm.ssidSelect.options[wifiForm.ssidSelect.selectedIndex]?.dataset.open === 'true';
 
-    if (!ssid) {
-        showModal('Erro', 'Selecione uma rede Wi-Fi');
+    // Validações iniciais
+    if (!validateNetworkSelection(ssid, isOpenNetwork, password) || !validateMDns(mDns)) {
+        setLoading(false);
         return;
     }
 
-    if (!isOpenNetwork && !password) {
-        showModal('Erro', 'Digite a senha da rede Wi-Fi');
-        return;
-    }
+    let ipStr = "", gwStr = "", snStr = "";
 
-    showModal('Salvando', 'Salvando credenciais Wi-Fi...');
+    modal.saveBtn.classList.add('hidden');
+    
+
+
+    if (!dhcp) {
+        // Validação de IP estático
+        if (!isValidIP(...ip)) {
+            showModal('Erro', 'Endereço IP inválido!\n- Cada octeto deve estar entre 1-254\n- Primeiro octeto não pode ser 0\n- Último octeto não pode ser 0 ou 255\n- Não pode ser 127.0.0.1');
+            return;
+        }
+    
+        // const ipStr = ip.join('.');
+        ipStr = Array.from(document.querySelectorAll('.ip-group input[id^="ip"]')).map(f => f.value).join('.');
+        gwStr = Array.from(document.querySelectorAll('.ip-group input[id^="gw"]')).map(f => f.value).join('.');
+        snStr = Array.from(document.querySelectorAll('.ip-group input[id^="sn"]')).map(f => f.value).join('.');
+        
+        if (!areInSameNetwork(ipStr, gwStr, snStr)) {
+            showModal('Erro', 'IP e Gateway não estão na mesma rede de acordo com a máscara fornecida!');
+            setLoading(false);
+            return;
+        }
+    
+        
+    } 
+
+    showModal('Salvando', 'Aguarde enquanto salvamos as configurações...');
 
     try {
-        const response = await fetch('/save-wifi-credentials', {
+        const response = await fetch('/save-wifi-settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 ssid,
                 password: isOpenNetwork ? '' : password,
-                dhcp
-            })
-        });
-
-        if (!response.ok) throw new Error('Erro no servidor');
-        
-        const data = await response.json();
-        showModal('Sucesso', data.message || 'Credenciais salvas com sucesso!');
-        
-        setTimeout(() => {
-            closeModal();
-            // Resetar formulário se necessário
-            wifiForm.ssidSelect.value = '';
-            wifiForm.passwordInput.value = '';
-            wifiForm.dhcpCheckbox.checked = true;
-            wifiForm.passwordField.style.display = 'none';
-        }, 2000);
-    } catch (error) {
-        showModal('Erro', 'Falha ao salvar: ' + error.message);
-    }
-}
-
-// Função para salvar configuração de IP estático
-async function saveStaticIpConfig() {
-    const mDns = staticIpForm.mDnsInput.value;
-    const ip = Array.from(staticIpForm.ipFields).map(field => field.value);
-    modal.saveBtn.classList.add('hidden');
-    
-    if (!mDns || !/^[a-zA-Z0-9]+$/.test(mDns)) {
-        showModal('Erro', 'Nome de rede inválido! Deve conter apenas letras e números.');
-        return;
-    }
-
-    if (!isValidIP(...ip)) {
-        showModal('Erro', 'Endereço IP inválido!\n- Cada octeto deve estar entre 1-254\n- Primeiro octeto não pode ser 0\n- Último octeto não pode ser 0 ou 255\n- Não pode ser 127.0.0.1');
-        return;
-    }
-
-    const ipStr = ip.join('.');
-    const gwStr = Array.from(document.querySelectorAll('.ip-group input[id^="gw"]')).map(f => f.value).join('.');
-    const snStr = Array.from(document.querySelectorAll('.ip-group input[id^="sn"]')).map(f => f.value).join('.');
-
-    if (!areInSameNetwork(ipStr, gwStr, snStr)) {
-        showModal('Erro', 'IP e Gateway não estão na mesma rede de acordo com a máscara fornecida!');
-        return;
-    }
-
-    showModal('Salvando', 'Aguarde enquanto salvamos as configurações...');
-
-    try {
-        const response = await fetch('/save-wifi-config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+                dhcp,
                 mDns,
                 ip: ipStr,
                 gateway: gwStr,
@@ -247,6 +279,8 @@ async function saveStaticIpConfig() {
         showModal('Sucesso', data.message || 'Configuração salva com sucesso!');
     } catch (error) {
         showModal('Erro', 'Falha ao salvar: ' + error.message);
+    } finally {
+        setLoading(false);
     }
 }
 
@@ -259,12 +293,6 @@ document.querySelector('.menu-toggle').addEventListener('click', () => {
 });
 
 // Controle do formulário WiFi
-wifiForm.dhcpCheckbox.addEventListener('change', function() {
-    staticIpForm.ipFields.forEach(field => {
-        field.disabled = this.checked;
-    });
-});
-
 wifiForm.ssidSelect.addEventListener('change', function() {
     const selectedOption = this.options[this.selectedIndex];
     const hasValue = this.value !== '';
@@ -273,18 +301,19 @@ wifiForm.ssidSelect.addEventListener('change', function() {
     // Esconde tudo se não tiver valor selecionado
     if (!hasValue) {
         wifiForm.passwordField.style.display = 'none';
-        wifiForm.connectBtn.style.display = 'none';
-        wifiForm.dhcpWrapper.style.display = 'none';
         return;
     }
 
-    // Mostra elementos (com tratamento especial para o campo de senha)
-    wifiForm.connectBtn.style.display = 'block';
-    wifiForm.dhcpWrapper.style.display = 'block';
     wifiForm.passwordField.style.display = isOpen ? 'none' : 'block';
 });
 
 // Configuração de IP estático
+staticIpForm.dhcpCheckbox.addEventListener('change', function() {
+    staticIpForm.ipFields.forEach(field => {
+        field.disabled = this.checked;
+    });
+});
+
 staticIpForm.mDnsInput.addEventListener('input', function() {
     this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
 });
@@ -312,13 +341,17 @@ staticIpForm.ipFields.forEach((input, index) => {
 });
 
 // Eventos principais
-modal.closeBtn.addEventListener('click', closeModal);
-document.getElementById('credentials').addEventListener('submit', connectToWifi);
-wifiForm.saveBtn.addEventListener('click', saveWifiCredentials);
-wifiForm.refreshBtn.addEventListener('click', scanWifi);
-staticIpForm.saveConfigBtn.addEventListener('click', saveStaticIpConfig);
+modal.closeBtn?.addEventListener('click', closeModal);
+wifiForm.refreshBtn?.addEventListener('click', scanWifi);
+staticIpForm.saveConfigBtn?.addEventListener('click', saveStaticIpConfig);
+staticIpForm.saveConfigBtn?.addEventListener('click', function() {
+    isSaveButtonClicked = true;
+    // O setLoading(true) será chamado pela função que trata o submit
+});
 
 // Inicialização
 window.addEventListener('DOMContentLoaded', () => {
+    loadWiFiSettings();
     scanWifi();
+
 });

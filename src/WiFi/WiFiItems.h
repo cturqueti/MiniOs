@@ -8,7 +8,7 @@
 struct WiFiItems {
     String ssid;
     String password;
-    String dhcp;
+    bool dhcp;
     IPAddress ip;
     IPAddress gateway;
     IPAddress subnet;
