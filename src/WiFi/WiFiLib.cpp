@@ -125,7 +125,7 @@ void WiFiLib::startAP() {
     // _captivePortal.begin();
 }
 
-bool WiFiCaptivePortal::_beginCredentials() {
+bool WiFiLib::_beginCredentials() {
     if (!_preferences.begin(nvs_namespace.data(), false)) { // Use c_str() para String
         if (_log == WiFiLog::ENABLE) {
             LOG_ERROR("[WiFi] Error on load NVS");
