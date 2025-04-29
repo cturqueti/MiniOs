@@ -2,6 +2,9 @@
 #include "gf128mul.h"
 #include <string.h>
 
+static void process_blocks(const uint8_t *H, const uint8_t *data,
+                           size_t data_len, uint8_t x[16]);
+
 /**
  * @brief Completes GHASH calculation for AES-GCM.
  *
@@ -175,7 +178,19 @@ int aes_gcm_decrypt(aes_context *ctx,
     return 0;
 }
 
-void process_blocks(const uint8_t *H, const uint8_t *data, size_t data_len, uint8_t x[16])
+/**
+ * @brief Processes a sequence of blocks of data using AES encryption
+ *
+ * This function processes a sequence of blocks of data using AES encryption.
+ * It takes a sequence of blocks of 16 bytes each, encrypts each block using
+ * AES, and then XORs the result with the given array `x`.
+ *
+ * @param H Pointer to the 128-bit hash key H.
+ * @param data Pointer to the sequence of data blocks to be processed.
+ * @param data_len Length of the sequence of data blocks in bytes.
+ * @param x Array of 16 bytes where the result of the XOR operation will be stored.
+ */
+static void process_blocks(const uint8_t *H, const uint8_t *data, size_t data_len, uint8_t x[16])
 {
     aes_context ctx;
     uint8_t key[16] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x97, 0x75, 0x46, 0x42, 0x0f, 0x18}; // Exemplo de chave AES

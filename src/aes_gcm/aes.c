@@ -191,7 +191,6 @@ void aes_init(aes_context *ctx, const uint8_t *key, size_t key_len)
  * @param output Buffer where the 16-byte block of encrypted ciphertext will
  *               be stored.
  */
-
 void aes_encrypt(aes_context *ctx, const uint8_t input[16], uint8_t output[16])
 {
     uint8_t state[16];

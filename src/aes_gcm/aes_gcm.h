@@ -21,6 +21,4 @@ int aes_gcm_decrypt(aes_context *ctx,
                     const uint8_t *tag, size_t tag_len,
                     uint8_t *plaintext);
 
-void process_blocks(const uint8_t *H, const uint8_t *data, size_t data_len, uint8_t x[16]);
-
 #endif // AES_GCM_H
